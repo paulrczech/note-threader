@@ -1,18 +1,38 @@
 import { Midi } from '@tonejs/midi'
 import type { Cluster } from './noteUtils'
 
+export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
+
 export interface MidiExportOptions {
   bpm: number
-  arpeggiate: boolean      // true = stagger notes, false = simultaneous chord
+  direction: ArpeggioDirection
   noteDuration: number     // duration of each note in seconds
-  arpeggioInterval: number // seconds between arpeggio notes (ignored if !arpeggiate)
+  arpeggioInterval: number // seconds between arpeggio notes (ignored for 'chord')
 }
 
 const DEFAULT_OPTIONS: MidiExportOptions = {
   bpm: 80,
-  arpeggiate: true,
+  direction: 'up',
   noteDuration: 1.5,
   arpeggioInterval: 0.12,
+}
+
+function orderNotes(cluster: Cluster, direction: ArpeggioDirection): number[] {
+  const sorted = [...cluster].sort((a, b) => a - b)
+  switch (direction) {
+    case 'down':
+      return sorted.reverse()
+    case 'updown': {
+      const inner = sorted.slice(1, sorted.length - 1).reverse()
+      return [...sorted, ...inner]
+    }
+    case 'random':
+      return [...sorted].sort(() => Math.random() - 0.5)
+    case 'up':
+    case 'chord':
+    default:
+      return sorted
+  }
 }
 
 // Export a sequence of clusters as a MIDI file and trigger a browser download
@@ -26,28 +46,16 @@ export function exportSequenceAsMidi(
   midi.header.setTempo(opts.bpm)
 
   const track = midi.addTrack()
-  // Name the track
   track.name = 'Note Threader'
 
   let currentTime = 0
   const clusterGap = 0.2  // brief silence between clusters
 
   for (const cluster of sequence) {
-    const sorted = [...cluster].sort((a, b) => a - b)
+    const notes = orderNotes(cluster, opts.direction)
 
-    if (opts.arpeggiate) {
-      sorted.forEach((midi_note, i) => {
-        track.addNote({
-          midi: midi_note,
-          time: currentTime + i * opts.arpeggioInterval,
-          duration: opts.noteDuration,
-          velocity: 0.75,
-        })
-      })
-      currentTime += sorted.length * opts.arpeggioInterval + opts.noteDuration + clusterGap
-    } else {
-      // All notes simultaneously (block chord)
-      sorted.forEach(midi_note => {
+    if (opts.direction === 'chord') {
+      notes.forEach(midi_note => {
         track.addNote({
           midi: midi_note,
           time: currentTime,
@@ -56,6 +64,16 @@ export function exportSequenceAsMidi(
         })
       })
       currentTime += opts.noteDuration + clusterGap
+    } else {
+      notes.forEach((midi_note, i) => {
+        track.addNote({
+          midi: midi_note,
+          time: currentTime + i * opts.arpeggioInterval,
+          duration: opts.noteDuration,
+          velocity: 0.75,
+        })
+      })
+      currentTime += notes.length * opts.arpeggioInterval + opts.noteDuration + clusterGap
     }
   }
 

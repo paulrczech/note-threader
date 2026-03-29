@@ -34,7 +34,7 @@ const SALAMANDER_URLS: Record<string, string> = {
 const NOTE_DURATION = '2n'
 const LOOP_GAP_BEATS = 1  // beats of silence between clusters in loop
 
-export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random'
+export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 
 export interface PlaybackSettings {
   bpm: number
@@ -57,11 +57,13 @@ function intervalFromBpm(bpm: number): number {
   return 60 / bpm / 4
 }
 
-// Build the ordered note array for an arpeggio based on direction
+// Build the ordered note array for an arpeggio based on direction.
+// For 'chord', returns sorted notes — caller is responsible for firing them at offset 0.
 function buildArpeggioNotes(cluster: number[], direction: ArpeggioDirection): number[] {
   const sorted = [...cluster].sort((a, b) => a - b)
   switch (direction) {
     case 'up':
+    case 'chord':
       return sorted
     case 'down':
       return [...sorted].reverse()
@@ -116,7 +118,7 @@ function playCluster(
 
   stopLoop()
 
-  const interval = intervalFromBpm(settings.bpm)
+  const interval = settings.direction === 'chord' ? 0 : intervalFromBpm(settings.bpm)
   const notes = buildArpeggioNotes(cluster, settings.direction)
   const now = Tone.now()
 
@@ -140,14 +142,18 @@ function playSequence(
 
   stopLoop()
 
-  const interval = intervalFromBpm(settings.bpm)
+  const isChord = settings.direction === 'chord'
+  const interval = isChord ? 0 : intervalFromBpm(settings.bpm)
   const beat = 60 / settings.bpm
 
   Tone.getTransport().bpm.value = settings.bpm
 
-  // Each cluster occupies: (voices * interval) + gap
+  // Chord mode: each cluster fires simultaneously and occupies one beat + gap
+  // Arpeggio mode: each cluster occupies (voices * interval) + gap
   const maxVoices = Math.max(...sequence.map(c => c.length))
-  const clusterDuration = maxVoices * interval + LOOP_GAP_BEATS * beat
+  const clusterDuration = isChord
+    ? (1 + LOOP_GAP_BEATS) * beat
+    : maxVoices * interval + LOOP_GAP_BEATS * beat
 
   const events = sequence.map((cluster, i) => ({
     time: i * clusterDuration,

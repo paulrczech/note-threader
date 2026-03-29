@@ -5,7 +5,7 @@ export type VoiceCount = 3 | 4
 export type MovementSize = 'half' | 'step' | 'whole' | 'third' | 'free'
 export type KeyLockMode = 'free' | 'diatonic' | 'modal'
 export type LoopMode = 'auto' | 'manual' | 'capped'
-export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random'
+export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 
 export const useSettingsStore = defineStore('settings', () => {
   const voiceCount = ref<VoiceCount>(3)

@@ -138,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   IonPage, IonHeader, IonToolbar, IonTitle,
@@ -191,7 +191,14 @@ const directionOptions = [
   { label: '↓',   value: 'down' },
   { label: '↑↓',  value: 'updown' },
   { label: '↺',   value: 'random' },
+  { label: '≡',   value: 'chord' },
 ]
+
+watch(() => settingsStore.arpeggioDirection, () => {
+  if (isPlaying.value) {
+    playLoop()
+  }
+})
 
 const playbackSettings = computed(() => ({
   bpm: settingsStore.tempo,
@@ -348,7 +355,7 @@ function adjustTempo(delta: number) {
 function exportMidi() {
   exportSequenceAsMidi(sequenceStore.sequence, {
     bpm: settingsStore.tempo,
-    arpeggiate: true,
+    direction: settingsStore.arpeggioDirection,
     arpeggioInterval: 60 / settingsStore.tempo / 4,
   })
 }
