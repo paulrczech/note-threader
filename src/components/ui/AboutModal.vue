@@ -60,16 +60,19 @@ defineEmits<{ close: [] }>()
 .about-header { text-align: center; }
 
 .about-title {
-  font-size: 1.4rem;
-  font-weight: 200;
-  letter-spacing: 0.12em;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
   color: var(--color-text);
   margin: 0 0 0.3rem;
 }
 
 .about-sub {
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 300;
+  letter-spacing: 0.06em;
   color: var(--color-text-dim);
   font-style: italic;
   margin: 0;
@@ -82,8 +85,9 @@ defineEmits<{ close: [] }>()
 }
 
 .about-body p {
-  font-size: 0.88rem;
-  line-height: 1.65;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.7;
   color: var(--color-text);
   margin: 0;
 }

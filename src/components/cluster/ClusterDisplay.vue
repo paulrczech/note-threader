@@ -49,10 +49,10 @@ function voiceColor(index: number): string {
 }
 
 .note-label {
-  font-size: 2rem;
+  font-family: var(--font-serif);
+  font-size: 2.6rem;
   font-weight: 300;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   line-height: 1;
-  font-family: 'SF Mono', 'Fira Code', monospace;
 }
 </style>

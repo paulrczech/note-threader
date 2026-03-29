@@ -3,10 +3,31 @@
     <p class="section-label">saved sessions</p>
     <div class="session-list">
       <div v-for="s in sessions" :key="s.id" class="session-row">
-        <button class="session-load" @click="$emit('load', s)">
-          <span class="session-name">{{ s.name }}</span>
-          <span class="session-meta">{{ s.sequence.length }} clusters · {{ s.voiceCount }}v</span>
-        </button>
+        <div class="session-load" :class="{ editing: editingId === s.id }">
+          <!-- Name edit input -->
+          <input
+            v-if="editingId === s.id"
+            :ref="el => { if (el) editInputs[s.id] = el as HTMLInputElement }"
+            class="session-name-input"
+            v-model="editName"
+            @keydown.enter="commitRename(s.id)"
+            @keydown.escape="cancelRename"
+            @blur="commitRename(s.id)"
+          />
+
+          <!-- Normal row — click name to edit, click elsewhere to load -->
+          <template v-else>
+            <span
+              class="session-name"
+              @click.stop="startRename(s)"
+              title="tap to rename"
+            >{{ s.name }}</span>
+            <button class="session-load-btn" @click="$emit('load', s)">
+              <span class="session-meta">{{ s.sequence.length }} clusters · {{ s.voiceCount }}v ›</span>
+            </button>
+          </template>
+        </div>
+
         <button class="session-delete" @click="remove(s.id)">×</button>
       </div>
     </div>
@@ -14,18 +35,43 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { listSessions, deleteSession, type SavedSession } from '../../utils/sessionStorage'
+import { ref, onMounted, nextTick } from 'vue'
+import { listSessions, deleteSession, renameSession, type SavedSession } from '../../utils/sessionStorage'
 
 const emit = defineEmits<{ load: [session: SavedSession] }>()
 
 const sessions = ref<SavedSession[]>([])
+const editingId = ref<string | null>(null)
+const editName = ref('')
+const editInputs: Record<string, HTMLInputElement> = {}
 
 onMounted(() => { sessions.value = listSessions() })
 
 function remove(id: string) {
   deleteSession(id)
   sessions.value = listSessions()
+}
+
+function startRename(s: SavedSession) {
+  editingId.value = s.id
+  editName.value = s.name
+  nextTick(() => {
+    editInputs[s.id]?.select()
+  })
+}
+
+function commitRename(id: string) {
+  if (editingId.value !== id) return
+  const trimmed = editName.value.trim()
+  if (trimmed) {
+    renameSession(id, trimmed)
+    sessions.value = listSessions()
+  }
+  editingId.value = null
+}
+
+function cancelRename() {
+  editingId.value = null
 }
 </script>
 
@@ -61,13 +107,13 @@ function remove(id: string) {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 0.45rem 0.75rem;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  transition: border-color 0.15s;
   min-width: 0;
+  transition: border-color 0.15s;
+  gap: 0.4rem;
 }
-.session-load:hover { border-color: var(--color-accent); }
+.session-load.editing {
+  border-color: var(--color-accent);
+}
 
 .session-name {
   font-size: 0.8rem;
@@ -75,14 +121,44 @@ function remove(id: string) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: text;
+  flex: 1;
+  min-width: 0;
+}
+.session-name:hover {
+  color: var(--color-accent);
+}
+
+.session-name-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-family: inherit;
+  padding: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.session-load-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.session-load-btn:hover .session-meta {
+  color: var(--color-accent);
 }
 
 .session-meta {
   font-size: 0.65rem;
   color: var(--color-text-dim);
-  flex-shrink: 0;
-  margin-left: 0.6rem;
   font-family: 'SF Mono', 'Fira Code', monospace;
+  transition: color 0.15s;
 }
 
 .session-delete {

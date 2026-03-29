@@ -74,6 +74,13 @@ export const useSequenceStore = defineStore('sequence', () => {
     }
   }
 
+  function editClusterAt(index: number, newCluster: Cluster) {
+    if (index < 0 || index >= sequence.value.length) return
+    const sorted = sortCluster(newCluster)
+    if (!isValidCluster(sorted)) return
+    sequence.value[index] = sorted
+  }
+
   function deleteAt(index: number) {
     if (index < 0 || index >= sequence.value.length) return
     // Never delete the opening cluster (index 0)
@@ -110,6 +117,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     audition,
     confirm,
     back,
+    editClusterAt,
     deleteAt,
     setLoopResolved,
     reset,

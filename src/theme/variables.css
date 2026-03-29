@@ -1,6 +1,11 @@
 /* Note Threader — Design tokens */
 
 :root {
+  /* Typography */
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-mono:  'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
   /* Voice colors — one per voice slot */
   --voice-1: #7eb8d4;   /* soft blue   — bottom voice */
   --voice-2: #8ecfb0;   /* soft teal   — middle voice */
@@ -39,6 +44,10 @@
 
 /* Global resets */
 * { box-sizing: border-box; }
+
+body, ion-app {
+  font-family: var(--font-sans);
+}
 
 ion-content {
   --background: var(--color-bg);

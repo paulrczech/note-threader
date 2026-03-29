@@ -73,14 +73,14 @@
         <!-- Start buttons -->
         <div class="start-block">
           <button class="start-btn primary" @click="startRandom">
-            random start
+            let it begin
           </button>
           <button
             v-if="showManual"
             class="start-btn secondary"
             @click="startManual"
           >
-            start from these notes
+            begin here
           </button>
         </div>
 
@@ -199,18 +199,21 @@ async function startManual() {
 }
 
 .app-title {
-  font-size: 2rem;
-  font-weight: 200;
-  letter-spacing: 0.12em;
+  font-family: var(--font-serif);
+  font-size: 2.8rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
   color: var(--color-text);
   margin: 0 0 0.4rem;
 }
 
 .app-tagline {
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  color: var(--color-text-dim);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
   font-style: italic;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--color-text-dim);
   margin: 0;
 }
 

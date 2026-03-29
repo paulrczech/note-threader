@@ -22,7 +22,7 @@
       </IonContent>
     </IonPopover>
 
-    <button class="redraw-btn" @click="$emit('redraw')">redraw</button>
+    <button class="redraw-btn" @click="$emit('redraw')">another</button>
   </div>
 </template>
 
@@ -60,7 +60,9 @@ defineEmits<{ redraw: [] }>()
 }
 
 .strategy-text {
-  font-size: 1.05rem;
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 300;
   font-style: italic;
   color: var(--color-text);
   margin: 0;

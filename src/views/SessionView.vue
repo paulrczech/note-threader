@@ -37,8 +37,8 @@
 
         <!-- Strategy card -->
         <StrategyCard
-          v-if="currentStrategy && !sequenceStore.loopResolved"
-          :strategy="currentStrategy"
+          v-if="activeStrategy && !sequenceStore.loopResolved"
+          :strategy="activeStrategy"
           @redraw="redraw"
         />
 
@@ -72,14 +72,14 @@
         </div>
 
         <!-- No candidates warning -->
-        <div v-else-if="!sequenceStore.loopResolved && candidates.length === 0 && currentStrategy" class="no-candidates">
-          <p>no valid moves — <button class="inline-btn" @click="redraw">redraw strategy</button></p>
+        <div v-else-if="!sequenceStore.loopResolved && candidates.length === 0 && activeStrategy" class="no-candidates">
+          <p>no valid moves — <button class="inline-btn" @click="redraw">try another</button></p>
         </div>
 
         <!-- Confirm button -->
         <div v-if="selectedIndices.length > 0 && !sequenceStore.loopResolved" class="confirm-block">
           <button class="confirm-btn" @click="confirmSelection">
-            add {{ selectedIndices.length === 1 ? 'to' : selectedIndices.length + ' clusters to' }} sequence
+            {{ selectedIndices.length === 1 ? 'keep this' : 'keep these ' + selectedIndices.length }}
           </button>
         </div>
 
@@ -129,6 +129,7 @@
           :loop-point="sequenceStore.loopPoint"
           @audition="auditionHistoryCluster"
           @delete="deleteCluster"
+          @edit="editCluster"
         />
 
       </div>
@@ -157,6 +158,7 @@ import { useLoopDetection } from '../composables/useLoopDetection'
 import { generateCandidates } from '../composables/useVoiceLeading'
 
 import { midiToName } from '../data/notes'
+import type { Strategy } from '../data/strategies'
 import type { Cluster } from '../utils/noteUtils'
 import { sortCluster } from '../utils/noteUtils'
 import { saveSession } from '../utils/sessionStorage'
@@ -170,12 +172,13 @@ const settingsStore = useSettingsStore()
 const audioEngine = useAudioEngine()
 const { isPlaying } = audioEngine
 
-const { currentStrategy, draw, reset: resetDeck } = useStrategyDeck(
+const { draw, reset: resetDeck } = useStrategyDeck(
   () => settingsStore.keyLockActive
 )
 const { findLoopPoint } = useLoopDetection()
 
 const candidates = ref<Cluster[]>([])
+const activeStrategy = ref<Strategy | null>(null)
 const selectedIndices = ref<number[]>([])  // ordered by tap — drives add sequence
 const auditioning = ref<Cluster | null>(null)
 const savedFlash = ref(false)
@@ -210,6 +213,7 @@ onUnmounted(() => {
 function advance() {
   selectedIndices.value = []
   auditioning.value = null
+  activeStrategy.value = null
   // Keep multiSelect mode across draws — user chose it intentionally
   if (!sequenceStore.currentCluster) return
 
@@ -217,11 +221,11 @@ function advance() {
   let newCandidates: Cluster[] = []
 
   while (attempts < 5 && newCandidates.length === 0) {
-    draw()
-    if (!currentStrategy.value) break
+    const drawn = draw()
+    if (!drawn) break
     newCandidates = generateCandidates(
       sequenceStore.currentCluster,
-      currentStrategy.value,
+      drawn,
       {
         keyLockActive: settingsStore.keyLockActive,
         keyRoot: settingsStore.keyRoot,
@@ -229,6 +233,7 @@ function advance() {
       }
     )
     attempts++
+    if (newCandidates.length > 0) activeStrategy.value = drawn
   }
 
   candidates.value = newCandidates
@@ -322,6 +327,14 @@ function deleteCluster(index: number) {
   sequenceStore.setLoopResolved(false)
 }
 
+function editCluster(index: number, newCluster: Cluster) {
+  sequenceStore.editClusterAt(index, newCluster)
+  if (index === sequenceStore.sequence.length - 1) {
+    sequenceStore.setLoopResolved(false)
+    advance()
+  }
+}
+
 function save() {
   saveSession(sequenceStore.sequence, settingsStore.voiceCount)
   savedFlash.value = true
@@ -363,8 +376,10 @@ function clusterKey(cluster: Cluster): string {
 }
 
 .session-title {
-  font-size: 0.8rem;
-  letter-spacing: 0.16em;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 300;
+  letter-spacing: 0.12em;
   text-align: center;
   color: var(--color-text-dim);
 }
@@ -398,9 +413,11 @@ function clusterKey(cluster: Cluster): string {
   background: rgba(224, 168, 124, 0.1);
   border: 1px solid var(--color-accent);
   border-radius: 10px;
-  padding: 0.7rem 1rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
+  padding: 0.8rem 1rem;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 300;
+  font-style: italic;
   color: var(--color-accent);
   text-align: center;
 }
