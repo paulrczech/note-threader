@@ -1,0 +1,7 @@
+{
+  "name": "note-threader",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
