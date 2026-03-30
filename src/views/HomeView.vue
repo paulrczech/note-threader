@@ -72,12 +72,16 @@
 
         <!-- Start buttons -->
         <div class="start-block">
-          <button class="start-btn primary" @click="startRandom">
+          <button
+            v-if="!showManual"
+            class="start-btn primary"
+            @click="startRandom"
+          >
             let it begin
           </button>
           <button
-            v-if="showManual"
-            class="start-btn secondary"
+            v-else
+            class="start-btn primary"
             @click="startManual"
           >
             begin here
@@ -112,6 +116,7 @@ const movementOptions = [
   { label: 'free', value: 'free' },
 ]
 
+
 const router = useRouter()
 const settingsStore = useSettingsStore()
 const sequenceStore = useSequenceStore()
@@ -132,13 +137,13 @@ const manualMidi = ref<number[]>([60, 64, 67, 71])
 const validMidiRange = Array.from({ length: 84 - 55 + 1 }, (_, i) => 55 + i)
 
 async function startRandom() {
-  await init()
+  await init(settingsStore.instrument)
   sequenceStore.randomStart(settingsStore.voiceCount)
   router.push('/session')
 }
 
 async function loadSession(session: SavedSession) {
-  await init()
+  await init(settingsStore.instrument)
   settingsStore.setVoiceCount(session.voiceCount as 3 | 4)
   sequenceStore.start(session.sequence[0])
   for (let i = 1; i < session.sequence.length; i++) {
@@ -157,7 +162,7 @@ async function startManual() {
     return
   }
 
-  await init()
+  await init(settingsStore.instrument)
   sequenceStore.start(sorted)
   router.push('/session')
 }

@@ -23,6 +23,21 @@
     >
       play once
     </button>
+
+    <div class="octave-btns">
+      <button
+        class="ctrl-btn octave"
+        :disabled="!canOctaveUp"
+        @click="$emit('octaveUp')"
+        title="octave up"
+      >+8</button>
+      <button
+        class="ctrl-btn octave"
+        :disabled="!canOctaveDown"
+        @click="$emit('octaveDown')"
+        title="octave down"
+      >−8</button>
+    </div>
   </div>
 </template>
 
@@ -30,12 +45,16 @@
 defineProps<{
   isPlaying: boolean
   sequenceLength: number
+  canOctaveUp: boolean
+  canOctaveDown: boolean
 }>()
 
 defineEmits<{
   play: []
   stop: []
   playOnce: []
+  octaveUp: []
+  octaveDown: []
 }>()
 </script>
 
@@ -83,5 +102,23 @@ defineEmits<{
 .ctrl-btn.secondary:not(:disabled):hover {
   color: var(--color-text);
   border-color: var(--color-text-dim);
+}
+
+.octave-btns {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: 0.2rem;
+}
+
+.ctrl-btn.octave {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  padding: 0.45rem 0.55rem;
+  color: var(--color-text-dim);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+.ctrl-btn.octave:not(:disabled):hover {
+  border-color: var(--color-text-dim);
+  color: var(--color-text);
 }
 </style>

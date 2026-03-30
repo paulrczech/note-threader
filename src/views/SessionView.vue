@@ -8,12 +8,21 @@
         <ion-title class="session-title">note threader</ion-title>
         <ion-buttons slot="end">
           <button
-            class="nav-btn save-btn"
+            class="nav-btn save-btn icon-btn"
             :class="{ flashed: savedFlash }"
             :disabled="sequenceStore.sequence.length < 1"
             @click="save"
-          >{{ savedFlash ? 'saved' : 'save' }}</button>
-          <button class="nav-btn" :disabled="sequenceStore.moveCount < 1" @click="goBack">back</button>
+            title="save session"
+          >
+            <svg v-if="!savedFlash" width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="14" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+              <rect x="4" y="1" width="6" height="5" rx="0.5" stroke="currentColor" stroke-width="1.2"/>
+              <rect x="3" y="8" width="10" height="6" rx="0.5" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            <span v-else style="font-size:0.7rem;letter-spacing:0.08em;">saved</span>
+          </button>
+          <button class="nav-btn icon-btn" :disabled="!sequenceStore.canUndo" @click="goUndo" title="undo">↩</button>
+          <button class="nav-btn icon-btn" :disabled="!sequenceStore.canRedo" @click="goRedo" title="redo">↪</button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -88,9 +97,13 @@
           <PlaybackControls
             :is-playing="isPlaying"
             :sequence-length="sequenceStore.sequence.length"
+            :can-octave-up="sequenceStore.canTransposeOctave(1)"
+            :can-octave-down="sequenceStore.canTransposeOctave(-1)"
             @play="playLoop"
             @stop="audioEngine.stopLoop()"
             @play-once="playOnce"
+            @octave-up="transposeOctave(1)"
+            @octave-down="transposeOctave(-1)"
           />
 
           <div class="playback-settings">
@@ -127,6 +140,7 @@
           v-if="sequenceStore.sequence.length > 0"
           :sequence="sequenceStore.sequence"
           :loop-point="sequenceStore.loopPoint"
+          :playing-index="isPlaying ? playingIndex : -1"
           @audition="auditionHistoryCluster"
           @delete="deleteCluster"
           @edit="editCluster"
@@ -170,7 +184,7 @@ const router = useRouter()
 const sequenceStore = useSequenceStore()
 const settingsStore = useSettingsStore()
 const audioEngine = useAudioEngine()
-const { isPlaying } = audioEngine
+const { isPlaying, playingIndex } = audioEngine
 
 const { draw, reset: resetDeck } = useStrategyDeck(
   () => settingsStore.keyLockActive
@@ -195,9 +209,18 @@ const directionOptions = [
 ]
 
 watch(() => settingsStore.arpeggioDirection, () => {
-  if (isPlaying.value) {
-    playLoop()
-  }
+  if (isPlaying.value) playLoop()
+})
+
+watch(() => settingsStore.tempo, () => {
+  if (isPlaying.value) playLoop()
+})
+
+watch(() => settingsStore.instrument, async (newInstrument) => {
+  const wasPlaying = isPlaying.value
+  audioEngine.stopLoop()
+  await audioEngine.init(newInstrument)
+  if (wasPlaying) playLoop()
 })
 
 const playbackSettings = computed(() => ({
@@ -302,9 +325,16 @@ function confirmSelection() {
   advance()
 }
 
-function goBack() {
+function goUndo() {
   audioEngine.stopLoop()
-  sequenceStore.back()
+  sequenceStore.undo()
+  sequenceStore.setLoopResolved(false)
+  advance()
+}
+
+function goRedo() {
+  audioEngine.stopLoop()
+  sequenceStore.redo()
   sequenceStore.setLoopResolved(false)
   advance()
 }
@@ -332,6 +362,12 @@ function deleteCluster(index: number) {
   audioEngine.stopLoop()
   sequenceStore.deleteAt(index)
   sequenceStore.setLoopResolved(false)
+}
+
+function transposeOctave(direction: 1 | -1) {
+  audioEngine.stopLoop()
+  sequenceStore.transposeOctave(direction)
+  advance()
 }
 
 function editCluster(index: number, newCluster: Cluster) {
@@ -405,6 +441,7 @@ function clusterKey(cluster: Cluster): string {
 .nav-btn:hover:not(:disabled) { color: var(--color-text); }
 .nav-btn:disabled { opacity: 0.3; cursor: default; }
 .save-btn.flashed { color: var(--color-accent); }
+.icon-btn { font-size: 0.95rem; padding: 0 0.3rem; }
 
 .current-cluster-block { padding-top: 0.5rem; }
 

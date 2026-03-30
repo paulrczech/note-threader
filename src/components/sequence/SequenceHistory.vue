@@ -42,6 +42,7 @@
               current: i === sequence.length - 1,
               'loop-origin': i === loopPoint,
               swiped: swipedIndex === i,
+              playing: i === playingIndex,
             }"
             @click="onEntryClick(cluster, i)"
             @touchstart="onTouchStart($event, i)"
@@ -91,6 +92,7 @@ const DELETE_THRESHOLD = 120
 const props = defineProps<{
   sequence: Cluster[]
   loopPoint?: number
+  playingIndex?: number
 }>()
 
 const emit = defineEmits<{
@@ -256,6 +258,10 @@ function confirmDelete(index: number) {
   border-color: var(--color-border);
 }
 .history-entry.loop-origin { border-color: var(--color-accent); }
+.history-entry.playing {
+  background: rgba(126, 184, 212, 0.08);
+  border-color: rgba(126, 184, 212, 0.35);
+}
 .history-entry.editing {
   background: var(--color-surface);
   border-color: var(--color-accent);

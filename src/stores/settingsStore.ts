@@ -6,6 +6,7 @@ export type MovementSize = 'half' | 'step' | 'whole' | 'third' | 'free'
 export type KeyLockMode = 'free' | 'diatonic' | 'modal'
 export type LoopMode = 'auto' | 'manual' | 'capped'
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
+export type InstrumentType = 'piano' | 'strings' | 'synth'
 
 export const useSettingsStore = defineStore('settings', () => {
   const voiceCount = ref<VoiceCount>(3)
@@ -16,6 +17,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const loopMode = ref<LoopMode>('auto')
   const maxMoves = ref<number>(32)   // cap for 'capped' loop mode
   const arpeggioDirection = ref<ArpeggioDirection>('up')
+  const instrument = ref<InstrumentType>('piano')
   const tempo = ref<number>(80)      // BPM
 
   const keyLockActive = computed(() => keyLockMode.value !== 'free')
@@ -29,6 +31,7 @@ export const useSettingsStore = defineStore('settings', () => {
   function setMaxMoves(n: number) { maxMoves.value = n }
   function setTempo(bpm: number) { tempo.value = Math.min(200, Math.max(40, bpm)) }
   function setArpeggioDirection(d: ArpeggioDirection) { arpeggioDirection.value = d }
+  function setInstrument(i: InstrumentType) { instrument.value = i }
 
   return {
     voiceCount,
@@ -39,6 +42,7 @@ export const useSettingsStore = defineStore('settings', () => {
     loopMode,
     maxMoves,
     arpeggioDirection,
+    instrument,
     tempo,
     keyLockActive,
     setVoiceCount,
@@ -50,5 +54,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setMaxMoves,
     setTempo,
     setArpeggioDirection,
+    setInstrument,
   }
 })

@@ -1,52 +1,75 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Cluster, sortCluster, isValidCluster } from '../utils/noteUtils'
-import { MIDI_SEED_MIN, MIDI_SEED_MAX } from '../data/notes'
+import { MIDI_SEED_MIN, MIDI_SEED_MAX, MIDI_MIN, MIDI_MAX } from '../data/notes'
 
 export const useSequenceStore = defineStore('sequence', () => {
   const sequence = ref<Cluster[]>([])
+  const redoStack = ref<Cluster[]>([])
   const candidates = ref<Cluster[]>([])
-  const auditioning = ref<Cluster | null>(null)  // cluster currently being previewed
+  const auditioning = ref<Cluster | null>(null)
   const loopResolved = ref(false)
-  const loopPoint = ref<number>(-1)  // index in sequence where loop closes
+  const loopPoint = ref<number>(-1)
 
   const currentCluster = computed<Cluster | null>(() =>
     sequence.value.length > 0 ? sequence.value[sequence.value.length - 1] : null
   )
 
   const moveCount = computed(() => Math.max(0, sequence.value.length - 1))
+  const canUndo = computed(() => sequence.value.length > 1)
+  const canRedo = computed(() => redoStack.value.length > 0)
 
-  // Start a new session with a given opening cluster
   function start(openingCluster: Cluster) {
+    // Always clear old session first — never let stale data leak through
+    sequence.value = []
+    redoStack.value = []
+    candidates.value = []
+    auditioning.value = null
+    loopResolved.value = false
+    loopPoint.value = -1
+
     const sorted = sortCluster(openingCluster)
     if (!isValidCluster(sorted)) {
       console.warn('Invalid opening cluster', sorted)
       return
     }
     sequence.value = [sorted]
-    candidates.value = []
-    auditioning.value = null
-    loopResolved.value = false
-    loopPoint.value = -1
   }
 
-  // Generate a random starting cluster of N voices within seed range
   function randomStart(voiceCount: number) {
-    const notes: number[] = []
-    const range = MIDI_SEED_MAX - MIDI_SEED_MIN
-    // First note anywhere in seed zone
-    notes.push(MIDI_SEED_MIN + Math.floor(Math.random() * range))
-    // Subsequent notes: within 14 semitones total spread, above previous
-    while (notes.length < voiceCount) {
-      const prev = notes[notes.length - 1]
-      // Leave room for remaining voices
-      const remaining = voiceCount - notes.length
-      const maxStep = Math.min(14 - (prev - notes[0]), 12 - remaining)
-      const step = 1 + Math.floor(Math.random() * Math.max(1, maxStep))
-      const next = prev + step
-      if (next > MIDI_SEED_MAX + 4) break  // safety: don't go too high
-      notes.push(next)
+    let notes: number[] = []
+
+    // Retry until we get exactly voiceCount valid notes.
+    // Previous approach broke early when notes went too high, producing silent failures.
+    for (let attempt = 0; attempt < 30; attempt++) {
+      notes = []
+      // Seed in lower half of zone so there's always room to add voices above
+      const seedRange = Math.floor((MIDI_SEED_MAX - MIDI_SEED_MIN) / 2)
+      notes.push(MIDI_SEED_MIN + Math.floor(Math.random() * seedRange))
+
+      while (notes.length < voiceCount) {
+        const prev = notes[notes.length - 1]
+        const spread = prev - notes[0]
+        const remaining = voiceCount - notes.length
+        // Reserve at least 1 semitone per remaining voice
+        const maxStep = Math.min(14 - spread - (remaining - 1), 5)
+        if (maxStep < 1) break
+        const step = 1 + Math.floor(Math.random() * maxStep)
+        notes.push(prev + step)
+      }
+
+      if (notes.length === voiceCount && isValidCluster(notes)) break
     }
+
+    // Guaranteed fallback — can never fail isValidCluster
+    if (notes.length !== voiceCount || !isValidCluster(notes)) {
+      const fallbacks: Record<number, Cluster> = {
+        3: [60, 64, 67],  // C4 E4 G4
+        4: [60, 64, 67, 71], // C4 E4 G4 B4
+      }
+      notes = fallbacks[voiceCount] ?? [60, 64, 67]
+    }
+
     start(notes)
   }
 
@@ -60,18 +83,45 @@ export const useSequenceStore = defineStore('sequence', () => {
   }
 
   function confirm(cluster: Cluster) {
+    redoStack.value = []  // new branch clears redo history
     sequence.value.push(sortCluster(cluster))
     candidates.value = []
     auditioning.value = null
   }
 
-  function back() {
-    if (sequence.value.length > 1) {
-      sequence.value.pop()
-      candidates.value = []
-      auditioning.value = null
-      loopResolved.value = false
-    }
+  function undo() {
+    if (sequence.value.length <= 1) return
+    const popped = sequence.value.pop()!
+    redoStack.value.push(popped)
+    candidates.value = []
+    auditioning.value = null
+    loopResolved.value = false
+  }
+
+  function redo() {
+    if (redoStack.value.length === 0) return
+    const cluster = redoStack.value.pop()!
+    sequence.value.push(cluster)
+    candidates.value = []
+    auditioning.value = null
+  }
+
+  // Returns whether an octave shift is possible in the given direction
+  function canTransposeOctave(direction: 1 | -1): boolean {
+    if (!currentCluster.value) return false
+    return currentCluster.value.every(n => {
+      const shifted = n + direction * 12
+      return shifted >= MIDI_MIN && shifted <= MIDI_MAX
+    })
+  }
+
+  function transposeOctave(direction: 1 | -1) {
+    if (!canTransposeOctave(direction)) return
+    const shifted = currentCluster.value!.map(n => n + direction * 12) as Cluster
+    const lastIdx = sequence.value.length - 1
+    sequence.value[lastIdx] = shifted
+    candidates.value = []
+    auditioning.value = null
   }
 
   function editClusterAt(index: number, newCluster: Cluster) {
@@ -83,7 +133,6 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   function deleteAt(index: number) {
     if (index < 0 || index >= sequence.value.length) return
-    // Never delete the opening cluster (index 0)
     if (index === 0 && sequence.value.length === 1) return
     sequence.value.splice(index, 1)
     candidates.value = []
@@ -97,6 +146,7 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   function reset() {
     sequence.value = []
+    redoStack.value = []
     candidates.value = []
     auditioning.value = null
     loopResolved.value = false
@@ -111,12 +161,17 @@ export const useSequenceStore = defineStore('sequence', () => {
     loopPoint,
     currentCluster,
     moveCount,
+    canUndo,
+    canRedo,
     start,
     randomStart,
     setCandidates,
     audition,
     confirm,
-    back,
+    undo,
+    redo,
+    canTransposeOctave,
+    transposeOctave,
     editClusterAt,
     deleteAt,
     setLoopResolved,
