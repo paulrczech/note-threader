@@ -249,9 +249,9 @@
   }
 
   .toggle-btn.active {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-    background: rgba(195, 174, 129, 0.3);
+    border-color: var(--color-text-dim);
+    color: var(--color-text-dim);
+    background: rgba(83, 105, 72, 0.25);
   }
 
   .ghost-btn {

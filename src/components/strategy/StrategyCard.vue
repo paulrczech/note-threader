@@ -36,8 +36,8 @@ defineEmits<{ redraw: [] }>()
 
 <style scoped>
 .strategy-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: linear-gradient(145deg, rgba(38, 45, 36, 0.4), rgba(25, 30, 24, 0.2));
+  border: 1px solid var(--color-border-subtle);
   border-radius: 12px;
   padding: 1.1rem 1.4rem;
   text-align: center;

@@ -370,7 +370,7 @@ function confirmDelete(index: number) {
   color: var(--color-accent);
   border-color: var(--color-accent);
 }
-.edit-confirm-btn:hover { background: rgba(195, 174, 129, 0.35); }
+.edit-confirm-btn:hover { background: rgba(83, 105, 72, 0.3); }
 .edit-cancel-btn { color: var(--color-text-dim); }
 .edit-cancel-btn:hover { border-color: var(--color-text-dim); color: var(--color-text); }
 

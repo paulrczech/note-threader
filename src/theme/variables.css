@@ -2,41 +2,42 @@
 
 :root {
   /* Typography */
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
   --font-mono:  'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* Voice colors — one per voice slot */
-  --voice-1: #3A7AA8;   /* deep blue      — bottom voice */
-  --voice-2: #4A8050;   /* forest green   — middle voice */
-  --voice-3: #765D34;   /* olive-wood     — top voice    */
-  --voice-4: #7A50A8;   /* deep violet    — fourth voice */
+  /* Voice colors */
+  --voice-1: #639094;   /* muted blue      — bottom voice */
+  --voice-2: #7b9c6f;   /* sage green      — middle voice */
+  --voice-3: #b8885c;   /* warm brown      — top voice    */
+  --voice-4: #8aa36a;   /* olive           — fourth voice */
 
-  /* Surfaces — warm linen + deep forest palette */
-  --color-bg:          #F2EEE3;   /* soft-linen      — warm page       */
-  --color-surface:     #FAFAF5;   /* near-white      — card lift       */
-  --color-surface-2:   #E6E8D4;   /* light sage-linen — inset surfaces */
-  --color-border:      #55574A;   /* ebony           — confident edge  */
+  /* Surfaces — dark forest palette */
+  --color-bg:             #151814;
+  --color-surface:        #1a201a;
+  --color-surface-2:      #212820;
+  --color-border:         #2a3327;
+  --color-border-subtle:  rgba(155, 166, 151, 0.15);
 
   /* Text */
-  --color-text:        #2B361C;   /* evergreen       — deepest         */
-  --color-text-muted:  #C3AE81;   /* soft-fawn       — very muted      */
-  --color-text-dim:    #8B9570;   /* palm-leaf       — secondary       */
+  --color-text:        #e6dec8;   /* warm off-white */
+  --color-text-dim:    #8f9888;   /* muted sage-grey */
+  --color-text-muted:  #4a5847;   /* very muted */
 
-  /* Accent — evergreen for CTAs, soft-fawn for selections */
-  --color-accent:      #2B361C;
-  --color-accent-warm: #C3AE81;
+  /* Accent */
+  --color-accent:      #536948;   /* active sage green */
+  --color-accent-warm: #b8885c;   /* warm brown — secondary */
 
   /* Ionic overrides */
   --ion-background-color:             var(--color-bg);
-  --ion-background-color-rgb:         242, 238, 227;
+  --ion-background-color-rgb:         21, 24, 20;
   --ion-text-color:                   var(--color-text);
-  --ion-text-color-rgb:               43, 54, 28;
+  --ion-text-color-rgb:               230, 222, 200;
   --ion-color-primary:                var(--color-accent);
-  --ion-color-primary-rgb:            43, 54, 28;
-  --ion-color-primary-contrast:       #F2EEE3;
-  --ion-color-primary-shade:          #1A2210;
-  --ion-color-primary-tint:           #3B4E30;
+  --ion-color-primary-rgb:            83, 105, 72;
+  --ion-color-primary-contrast:       #e6dec8;
+  --ion-color-primary-shade:          #3d5036;
+  --ion-color-primary-tint:           #6d8562;
   --ion-toolbar-background:           var(--color-bg);
   --ion-toolbar-border-color:         var(--color-border);
   --ion-item-background:              var(--color-surface);
@@ -52,6 +53,13 @@ body, ion-app {
 
 ion-content {
   --background: var(--color-bg);
+}
+
+ion-app {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(55, 70, 50, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(90, 70, 50, 0.08) 0%, transparent 45%);
 }
 
 ion-toolbar {

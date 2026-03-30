@@ -454,7 +454,7 @@ function clusterKey(cluster: Cluster): string {
 }
 
 .loop-banner {
-  background: rgba(195, 174, 129, 0.35);
+  background: rgba(83, 105, 72, 0.3);
   border: 1px solid var(--color-accent);
   border-radius: 10px;
   padding: 0.8rem 1rem;
@@ -477,7 +477,7 @@ function clusterKey(cluster: Cluster): string {
   align-items: center;
   gap: 0.5rem;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 10px;
   padding: 0.65rem 1rem;
   cursor: pointer;
@@ -489,7 +489,7 @@ function clusterKey(cluster: Cluster): string {
 .candidate-pill:hover { border-color: var(--color-text-dim); }
 .candidate-pill.selected {
   border-color: var(--color-accent);
-  background: rgba(195, 174, 129, 0.25);
+  background: rgba(83, 105, 72, 0.2);
 }
 
 .pill-order {
@@ -500,7 +500,7 @@ function clusterKey(cluster: Cluster): string {
   height: 1.1rem;
   border-radius: 50%;
   background: var(--color-accent);
-  color: #F2EEE3;
+  color: #e6dec8;
   font-size: 0.6rem;
   font-weight: 600;
   flex-shrink: 0;
@@ -670,7 +670,7 @@ function clusterKey(cluster: Cluster): string {
 
 .toggle-btn.active {
   border-color: var(--color-accent);
-  color: var(--color-bg);
+  color: var(--color-text);
   background: var(--color-accent);
 }
 </style>
