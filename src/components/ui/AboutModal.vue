@@ -13,13 +13,12 @@
 
         <div class="about-body">
           <p>
-            Move one voice at a time. A gentle constraint nudges each note just
-            off the path you'd choose on your own.
+            Follow the pull. Each turn, a strategy guides how the voices move —
+            sometimes one, sometimes all of them.
           </p>
           <p>
-            Not by naming chords — by sliding single voices in small intervals,
-            letting the harmony emerge as a byproduct. The result is movement
-            that feels inevitable without being predictable.
+            No need to name chords. Harmony emerges as a byproduct of small
+            movements, feeling inevitable without being predictable.
           </p>
           <p>No wrong answers. Export what you find.</p>
         </div>
