@@ -39,6 +39,7 @@ let loopPart: Tone.Part | null = null
 let rafId: number | null = null
 let currentClusterDuration = 0
 let currentSequenceLength = 0
+let lastPlaySequenceTime = 0
 
 const isLoaded = ref(false)
 const isPlaying = ref(false)
@@ -162,6 +163,9 @@ function playSequence(
   loop = true
 ): void {
   if (!instrument || !isLoaded.value || sequence.length === 0) return
+  const now = Date.now()
+  if (now - lastPlaySequenceTime < 100) return
+  lastPlaySequenceTime = now
 
   stopLoop()
 
@@ -197,6 +201,8 @@ function playSequence(
     })
   }, events)
 
+  loopPart.loop = loop
+  loopPart.loopEnd = totalDuration
   loopPart.start(0)
 
   // Small offset gives the scheduler time to commit before playback starts

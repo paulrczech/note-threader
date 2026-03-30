@@ -1,6 +1,6 @@
 <template>
   <div class="sequence-history">
-    <p class="history-label">sequence</p>
+    <p class="history-label">the flow</p>
     <div class="history-scroll">
       <div
         v-for="(cluster, i) in sequence"
@@ -370,7 +370,7 @@ function confirmDelete(index: number) {
   color: var(--color-accent);
   border-color: var(--color-accent);
 }
-.edit-confirm-btn:hover { background: rgba(224, 168, 124, 0.15); }
+.edit-confirm-btn:hover { background: rgba(195, 174, 129, 0.35); }
 .edit-cancel-btn { color: var(--color-text-dim); }
 .edit-cancel-btn:hover { border-color: var(--color-text-dim); color: var(--color-text); }
 

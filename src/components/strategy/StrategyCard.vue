@@ -1,6 +1,6 @@
 <template>
   <div class="strategy-card">
-    <p class="strategy-label">strategy</p>
+    <p class="strategy-label">the pull</p>
 
     <div class="strategy-body">
       <p class="strategy-text">{{ strategy.text }}</p>

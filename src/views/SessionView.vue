@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <button class="nav-btn" @click="goHome">← new</button>
         </ion-buttons>
-        <ion-title class="session-title">note threader</ion-title>
+        <ion-title class="session-title">eddy</ion-title>
         <ion-buttons slot="end">
           <button
             class="nav-btn save-btn icon-btn"
@@ -32,7 +32,7 @@
 
         <!-- Current cluster — displayed large -->
         <div class="current-cluster-block">
-          <p class="section-label">current cluster</p>
+          <p class="section-label">current</p>
           <ClusterDisplay
             v-if="sequenceStore.currentCluster"
             :cluster="auditioning ?? sequenceStore.currentCluster"
@@ -41,7 +41,7 @@
 
         <!-- Loop resolved banner -->
         <div v-if="sequenceStore.loopResolved" class="loop-banner">
-          loop resolved — {{ sequenceStore.moveCount }} moves
+          a loop has formed — {{ sequenceStore.moveCount }} moves
         </div>
 
         <!-- Strategy card -->
@@ -54,7 +54,7 @@
         <!-- Candidates -->
         <div v-if="!sequenceStore.loopResolved && candidates.length > 0" class="candidates-block">
           <div class="candidates-header">
-            <p class="section-label">options — tap to audition</p>
+            <p class="section-label">paths — tap to hear</p>
             <button
               class="multi-toggle"
               :class="{ active: multiSelect }"
@@ -454,7 +454,7 @@ function clusterKey(cluster: Cluster): string {
 }
 
 .loop-banner {
-  background: rgba(224, 168, 124, 0.1);
+  background: rgba(195, 174, 129, 0.35);
   border: 1px solid var(--color-accent);
   border-radius: 10px;
   padding: 0.8rem 1rem;
@@ -489,7 +489,7 @@ function clusterKey(cluster: Cluster): string {
 .candidate-pill:hover { border-color: var(--color-text-dim); }
 .candidate-pill.selected {
   border-color: var(--color-accent);
-  background: rgba(224, 168, 124, 0.07);
+  background: rgba(195, 174, 129, 0.25);
 }
 
 .pill-order {
@@ -500,7 +500,7 @@ function clusterKey(cluster: Cluster): string {
   height: 1.1rem;
   border-radius: 50%;
   background: var(--color-accent);
-  color: #0d0d12;
+  color: #F2EEE3;
   font-size: 0.6rem;
   font-weight: 600;
   flex-shrink: 0;
@@ -536,18 +536,18 @@ function clusterKey(cluster: Cluster): string {
 
 .confirm-btn {
   width: 100%;
-  background: none;
+  background: var(--color-accent);
   border: 1px solid var(--color-accent);
   border-radius: 10px;
-  color: var(--color-accent);
+  color: var(--color-bg);
   font-size: 0.85rem;
   letter-spacing: 0.1em;
   padding: 0.75rem;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s;
+  transition: background 0.15s, opacity 0.15s;
 }
-.confirm-btn:hover { background: rgba(224, 168, 124, 0.1); }
+.confirm-btn:hover { opacity: 0.85; }
 
 /* Playback row */
 .playback-row {
@@ -642,8 +642,8 @@ function clusterKey(cluster: Cluster): string {
 }
 .multi-toggle.active {
   border-color: var(--color-accent);
-  color: var(--color-accent);
-  background: rgba(224, 168, 124, 0.08);
+  color: var(--color-bg);
+  background: var(--color-accent);
 }
 
 .export-row {
@@ -670,7 +670,7 @@ function clusterKey(cluster: Cluster): string {
 
 .toggle-btn.active {
   border-color: var(--color-accent);
-  color: var(--color-accent);
-  background: rgba(224, 168, 124, 0.08);
+  color: var(--color-bg);
+  background: var(--color-accent);
 }
 </style>

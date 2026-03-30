@@ -1,4 +1,4 @@
-/* Note Threader — Design tokens */
+/* Eddy — Design tokens */
 
 :root {
   /* Typography */
@@ -7,35 +7,36 @@
   --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Voice colors — one per voice slot */
-  --voice-1: #7eb8d4;   /* soft blue   — bottom voice */
-  --voice-2: #8ecfb0;   /* soft teal   — middle voice */
-  --voice-3: #e0a87c;   /* warm amber  — top voice    */
-  --voice-4: #b8a0d4;   /* lavender    — fourth voice */
+  --voice-1: #3A7AA8;   /* deep blue      — bottom voice */
+  --voice-2: #4A8050;   /* forest green   — middle voice */
+  --voice-3: #765D34;   /* olive-wood     — top voice    */
+  --voice-4: #7A50A8;   /* deep violet    — fourth voice */
 
-  /* Surfaces */
-  --color-bg:          #0d0d12;
-  --color-surface:     #161620;
-  --color-surface-2:   #1e1e2a;
-  --color-border:      #2a2a38;
+  /* Surfaces — warm linen + deep forest palette */
+  --color-bg:          #F2EEE3;   /* soft-linen      — warm page       */
+  --color-surface:     #FAFAF5;   /* near-white      — card lift       */
+  --color-surface-2:   #E6E8D4;   /* light sage-linen — inset surfaces */
+  --color-border:      #55574A;   /* ebony           — confident edge  */
 
   /* Text */
-  --color-text:        #e4e4dc;
-  --color-text-muted:  #606078;
-  --color-text-dim:    #8888a8;
+  --color-text:        #2B361C;   /* evergreen       — deepest         */
+  --color-text-muted:  #C3AE81;   /* soft-fawn       — very muted      */
+  --color-text-dim:    #8B9570;   /* palm-leaf       — secondary       */
 
-  /* Accent */
-  --color-accent:      #e0a87c;
+  /* Accent — evergreen for CTAs, soft-fawn for selections */
+  --color-accent:      #2B361C;
+  --color-accent-warm: #C3AE81;
 
   /* Ionic overrides */
   --ion-background-color:             var(--color-bg);
-  --ion-background-color-rgb:         13, 13, 18;
+  --ion-background-color-rgb:         242, 238, 227;
   --ion-text-color:                   var(--color-text);
-  --ion-text-color-rgb:               228, 228, 220;
+  --ion-text-color-rgb:               43, 54, 28;
   --ion-color-primary:                var(--color-accent);
-  --ion-color-primary-rgb:            224, 168, 124;
-  --ion-color-primary-contrast:       #0d0d12;
-  --ion-color-primary-shade:          #c49060;
-  --ion-color-primary-tint:           #e8b88c;
+  --ion-color-primary-rgb:            43, 54, 28;
+  --ion-color-primary-contrast:       #F2EEE3;
+  --ion-color-primary-shade:          #1A2210;
+  --ion-color-primary-tint:           #3B4E30;
   --ion-toolbar-background:           var(--color-bg);
   --ion-toolbar-border-color:         var(--color-border);
   --ion-item-background:              var(--color-surface);

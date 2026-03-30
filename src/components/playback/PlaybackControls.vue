@@ -30,15 +30,16 @@
         :disabled="!canOctaveUp"
         @click="$emit('octaveUp')"
         title="octave up"
-      >+8</button>
+      >+12</button>
       <button
         class="ctrl-btn octave"
         :disabled="!canOctaveDown"
         @click="$emit('octaveDown')"
         title="octave down"
-      >−8</button>
+      >−12</button>
     </div>
   </div>
+
 </template>
 
 <script setup lang="ts">
@@ -63,6 +64,7 @@ defineEmits<{
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  width: 100%;
 }
 
 .ctrl-btn {
@@ -107,7 +109,9 @@ defineEmits<{
 .octave-btns {
   display: flex;
   gap: 0.25rem;
-  margin-left: 0.2rem;
+  margin-left: auto;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--color-border);
 }
 
 .ctrl-btn.octave {
