@@ -2,88 +2,93 @@
   <div class="sequence-history">
     <p class="history-label">the flow</p>
     <div class="history-scroll">
-      <div
-        v-for="(cluster, i) in sequence"
-        :key="i"
-        class="history-row"
-      >
-        <!-- Edit mode -->
-        <template v-if="editingIndex === i">
-          <div class="history-entry editing">
-            <span class="entry-index">{{ i + 1 }}</span>
-            <div class="edit-voices">
-              <select
-                v-for="(_, v) in editValues"
+      <IonReorderGroup :disabled="false" @ionItemReorder="onReorder($event)">
+        <div
+          v-for="(cluster, i) in sequence"
+          :key="i"
+          class="history-row"
+        >
+          <!-- Edit mode -->
+          <template v-if="editingIndex === i">
+            <div class="history-entry editing">
+              <span class="entry-index">{{ i + 1 }}</span>
+              <div class="edit-voices">
+                <select
+                  v-for="(_, v) in editValues"
+                  :key="v"
+                  v-model.number="editValues[v]"
+                  class="note-select"
+                  :style="{ color: voiceColors[v] }"
+                >
+                  <option
+                    v-for="midi in validMidiRange"
+                    :key="midi"
+                    :value="midi"
+                  >{{ midiToName(midi) }}</option>
+                </select>
+              </div>
+              <div class="edit-actions">
+                <button class="edit-confirm-btn" @click="commitEdit(i)" title="save">✓</button>
+                <button class="edit-cancel-btn" @click="cancelEdit" title="cancel">✕</button>
+              </div>
+            </div>
+            <p v-if="editError" class="edit-error">{{ editError }}</p>
+          </template>
+
+          <!-- Normal mode -->
+          <template v-else>
+            <div
+              class="history-entry"
+              :class="{
+                current: i === sequence.length - 1,
+                'loop-origin': i === loopPoint,
+                swiped: swipedIndex === i,
+                playing: i === playingIndex,
+              }"
+              @click="onEntryClick(cluster, i)"
+              @touchstart="onTouchStart($event, i)"
+              @touchmove="onTouchMove($event, i)"
+              @touchend="onTouchEnd(i)"
+              @mouseleave="cancelSwipe(i)"
+              :style="swipeStyle(i)"
+            >
+              <span class="entry-index">{{ i + 1 }}</span>
+              <span
+                v-for="(midi, v) in sortCluster(cluster)"
                 :key="v"
-                v-model.number="editValues[v]"
-                class="note-select"
+                class="entry-note"
                 :style="{ color: voiceColors[v] }"
-              >
-                <option
-                  v-for="midi in validMidiRange"
-                  :key="midi"
-                  :value="midi"
-                >{{ midiToName(midi) }}</option>
-              </select>
+              >{{ midiToName(midi) }}</span>
+              <button
+                class="edit-btn"
+                @click.stop="startEdit(cluster, i)"
+                title="edit notes"
+              >✎</button>
+              <IonReorder v-if="i > 0" class="reorder-handle" />
+              <span v-else class="reorder-spacer" />
             </div>
-            <div class="edit-actions">
-              <button class="edit-confirm-btn" @click="commitEdit(i)" title="save">✓</button>
-              <button class="edit-cancel-btn" @click="cancelEdit" title="cancel">✕</button>
-            </div>
-          </div>
-          <p v-if="editError" class="edit-error">{{ editError }}</p>
-        </template>
 
-        <!-- Normal mode -->
-        <template v-else>
-          <div
-            class="history-entry"
-            :class="{
-              current: i === sequence.length - 1,
-              'loop-origin': i === loopPoint,
-              swiped: swipedIndex === i,
-              playing: i === playingIndex,
-            }"
-            @click="onEntryClick(cluster, i)"
-            @touchstart="onTouchStart($event, i)"
-            @touchmove="onTouchMove($event, i)"
-            @touchend="onTouchEnd(i)"
-            @mouseleave="cancelSwipe(i)"
-            :style="swipeStyle(i)"
-          >
-            <span class="entry-index">{{ i + 1 }}</span>
-            <span
-              v-for="(midi, v) in sortCluster(cluster)"
-              :key="v"
-              class="entry-note"
-              :style="{ color: voiceColors[v] }"
-            >{{ midiToName(midi) }}</span>
+            <!-- Delete action revealed on swipe -->
             <button
-              class="edit-btn"
-              @click.stop="startEdit(cluster, i)"
-              title="edit notes"
-            >✎</button>
-          </div>
-
-          <!-- Delete action revealed on swipe -->
-          <button
-            class="delete-action"
-            :class="{ visible: swipedIndex === i }"
-            @click.stop="confirmDelete(i)"
-          >
-            delete
-          </button>
-        </template>
-      </div>
+              class="delete-action"
+              :class="{ visible: swipedIndex === i }"
+              @click.stop="confirmDelete(i)"
+            >
+              delete
+            </button>
+          </template>
+        </div>
+      </IonReorderGroup>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { IonReorderGroup, IonReorder } from '@ionic/vue'
 import type { Cluster } from '../../utils/noteUtils'
 import { sortCluster, isValidCluster } from '../../utils/noteUtils'
-import { midiToName, MIDI_MIN, MIDI_MAX } from '../../data/notes'
+import { midiToName, MIDI_MIN, MIDI_MAX, MAX_CLUSTER_SPREAD } from '../../data/notes'
 
 const VOICE_COLORS = ['var(--voice-1)', 'var(--voice-2)', 'var(--voice-3)', 'var(--voice-4)']
 const SWIPE_THRESHOLD = 60
@@ -99,6 +104,7 @@ const emit = defineEmits<{
   audition: [cluster: Cluster]
   delete: [index: number]
   edit: [index: number, newCluster: Cluster]
+  reorder: [from: number, to: number]
 }>()
 
 const voiceColors = VOICE_COLORS
@@ -119,12 +125,19 @@ function startEdit(cluster: Cluster, index: number) {
 function commitEdit(index: number) {
   const newCluster = [...editValues.value] as Cluster
   if (!isValidCluster(newCluster)) {
-    editError.value = 'invalid — voices must stay in order, max 14 semitones spread'
+    editError.value = `invalid — check range and spread (max ${MAX_CLUSTER_SPREAD} semitones)`
     return
   }
   editingIndex.value = null
   editError.value = ''
   emit('edit', index, newCluster)
+}
+
+function onReorder(event: CustomEvent) {
+  const { from, to } = event.detail
+  event.detail.complete(false)  // let Vue/Pinia handle the DOM update
+  const safeTo = Math.max(1, to)
+  if (from !== safeTo && from > 0) emit('reorder', from, safeTo)
 }
 
 function cancelEdit() {
@@ -305,6 +318,17 @@ function confirmDelete(index: number) {
   content: '·';
   color: var(--color-text-dim);
   margin-right: 0.4rem;
+}
+
+.reorder-handle {
+  flex-shrink: 0;
+  color: var(--color-text-dim);
+  opacity: 0.4;
+}
+
+.reorder-spacer {
+  flex-shrink: 0;
+  width: 24px;  /* matches IonReorder default width */
 }
 
 .edit-btn {

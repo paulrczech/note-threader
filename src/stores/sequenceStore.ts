@@ -131,6 +131,16 @@ export const useSequenceStore = defineStore('sequence', () => {
     sequence.value[index] = sorted
   }
 
+  function reorderSequence(from: number, to: number) {
+    if (from === to || from < 1) return  // seed (index 0) cannot be moved
+    const arr = [...sequence.value]
+    const [moved] = arr.splice(from, 1)
+    arr.splice(Math.max(1, to), 0, moved)
+    sequence.value = arr
+    candidates.value = []
+    auditioning.value = null
+  }
+
   function deleteAt(index: number) {
     if (index < 0 || index >= sequence.value.length) return
     if (index === 0 && sequence.value.length === 1) return
@@ -174,6 +184,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     transposeOctave,
     editClusterAt,
     deleteAt,
+    reorderSequence,
     setLoopResolved,
     reset,
   }

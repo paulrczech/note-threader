@@ -6,7 +6,7 @@ export type MovementSize = 'half' | 'step' | 'whole' | 'third' | 'free'
 export type KeyLockMode = 'free' | 'diatonic' | 'modal'
 export type LoopMode = 'auto' | 'manual' | 'capped'
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
-export type InstrumentType = 'piano' | 'strings' | 'synth'
+export type InstrumentType = 'piano' | 'strings' | 'synth' | 'pluck' | 'harp'
 
 export const useSettingsStore = defineStore('settings', () => {
   const voiceCount = ref<VoiceCount>(3)
@@ -17,7 +17,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const loopMode = ref<LoopMode>('auto')
   const maxMoves = ref<number>(32)   // cap for 'capped' loop mode
   const arpeggioDirection = ref<ArpeggioDirection>('up')
-  const instrument = ref<InstrumentType>('piano')
+  const instrument = ref<InstrumentType>('harp')
   const tempo = ref<number>(80)      // BPM
 
   const keyLockActive = computed(() => keyLockMode.value !== 'free')

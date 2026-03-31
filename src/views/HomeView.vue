@@ -7,7 +7,7 @@
         <!-- Title -->
         <div class="title-block">
           <h1 class="app-title">eddy</h1>
-          <p class="app-tagline">change the current</p>
+          <p class="app-tagline">let the music move itself</p>
         </div>
 
         <!-- Voice count -->
@@ -97,7 +97,7 @@
   import { useSettingsStore } from '../stores/settingsStore'
   import { useSequenceStore } from '../stores/sequenceStore'
   import { useAudioEngine } from '../composables/useAudioEngine'
-  import { midiToName } from '../data/notes'
+  import { midiToName, MAX_CLUSTER_SPREAD } from '../data/notes'
   import { isValidCluster, sortCluster } from '../utils/noteUtils'
 
   const VOICE_COLORS = [
@@ -157,7 +157,7 @@
 
     if (!isValidCluster(sorted)) {
       manualError.value =
-        'Invalid cluster — check range and spread (max 14 semitones)'
+        `Invalid cluster — check range and spread (max ${MAX_CLUSTER_SPREAD} semitones)`
       return
     }
 

@@ -71,14 +71,14 @@ A minimal music utility for voice leading guided by oblique strategies. Users mo
 - "choose your starting notes" (toggle to show manual entry)
 - "keep this" / "keep these N" (confirm button)
 - "another" (strategy redraw button)
-- "the pull" (strategy card section label)
-- "paths — tap to hear" (candidates section label)
+- "the drift" (strategy card section label)
+- "streams — tap to hear" (candidates section label)
 - "current" (current cluster section label)
 - "the flow" (sequence history section label)
 - "a loop has formed — N moves" (loop resolved banner)
 - "+12" / "−12" (octave transpose)
 - "✎" (edit icon on sequence rows)
-- Tagline: "change the current"
+- Tagline: "let the music move itself"
 
 ## V2 / deferred
 

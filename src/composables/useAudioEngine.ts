@@ -15,6 +15,17 @@ const SALAMANDER_URLS: Record<string, string> = {
   'A5':  'A5.mp3',  'C6':  'C6.mp3',
 }
 
+// Harp samples from nbrosowsky/tonejs-instruments
+const HARP_BASE = 'https://nbrosowsky.github.io/tonejs-instruments/samples/harp/'
+const HARP_URLS: Record<string, string> = {
+  'C3': 'C3.mp3', 'E3': 'E3.mp3', 'G3': 'G3.mp3', 'B3': 'B3.mp3',
+  'C5': 'C5.mp3', 'E5': 'E5.mp3', 'G5': 'G5.mp3', 'B5': 'B5.mp3',
+  'D2': 'D2.mp3', 'D4': 'D4.mp3', 'D6': 'D6.mp3',
+  'F2': 'F2.mp3', 'F4': 'F4.mp3', 'F6': 'F6.mp3',
+  'A2': 'A2.mp3', 'A4': 'A4.mp3', 'A6': 'A6.mp3',
+  'E1': 'E1.mp3', 'G1': 'G1.mp3', 'B1': 'B1.mp3',
+}
+
 const LOOP_GAP_BEATS = 1
 
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
@@ -29,9 +40,39 @@ const NOTE_DURATIONS: Record<InstrumentType, string> = {
   piano:   '2n',
   strings: '1n',
   synth:   '2n.',
+  pluck:   '1n',
+  harp:    '2n',
 }
 
-type ToneInstrument = Tone.Sampler | Tone.PolySynth
+// Pool of PluckSynth instances for polyphonic Karplus-Strong playback.
+// PluckSynth is monophonic so we cycle through a pool.
+class PluckPool {
+  private synths: Tone.PluckSynth[]
+  private idx = 0
+
+  constructor(size = 8) {
+    this.synths = Array.from({ length: size }, () =>
+      new Tone.PluckSynth({
+        attackNoise: 1,
+        dampening: 4000,
+        resonance: 0.98,
+      }).toDestination()
+    )
+  }
+
+  triggerAttackRelease(note: string, duration: string, time: number, velocity?: number): void {
+    const synth = this.synths[this.idx]
+    this.idx = (this.idx + 1) % this.synths.length
+    synth.triggerAttackRelease(note, duration, time, velocity)
+  }
+
+  dispose(): void {
+    this.synths.forEach(s => s.dispose())
+    this.synths = []
+  }
+}
+
+type ToneInstrument = Tone.Sampler | Tone.PolySynth | PluckPool
 
 let instrument: ToneInstrument | null = null
 let currentInstrumentType: InstrumentType | null = null
@@ -102,23 +143,28 @@ async function init(instrumentType: InstrumentType = 'piano'): Promise<void> {
   await Tone.start()
   currentInstrumentType = instrumentType
 
-  if (instrumentType === 'piano') {
+  if (instrumentType === 'piano' || instrumentType === 'harp') {
+    const urls = instrumentType === 'harp' ? HARP_URLS : SALAMANDER_URLS
+    const baseUrl = instrumentType === 'harp' ? HARP_BASE : SALAMANDER_BASE
     return new Promise((resolve, reject) => {
       instrument = new Tone.Sampler({
-        urls: SALAMANDER_URLS,
-        baseUrl: SALAMANDER_BASE,
+        urls,
+        baseUrl,
         onload: () => {
           isLoaded.value = true
           loadError.value = null
           resolve()
         },
         onerror: (err) => {
-          loadError.value = 'Failed to load piano samples'
+          loadError.value = `Failed to load ${instrumentType} samples`
           console.error('Sampler load error:', err)
           reject(err)
         },
       }).toDestination()
     })
+  } else if (instrumentType === 'pluck') {
+    instrument = new PluckPool(8)
+    isLoaded.value = true
   } else {
     instrument = instrumentType === 'strings' ? createStrings() : createSynth()
     isLoaded.value = true

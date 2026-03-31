@@ -8,19 +8,23 @@
       <div class="about-layout">
         <div class="about-header">
           <h2 class="about-title">eddy</h2>
-          <p class="about-sub">change the current</p>
+          <p class="about-sub">let the music move itself</p>
         </div>
 
         <div class="about-body">
           <p>
-            Follow the pull. Each turn, a strategy guides how the voices move —
-            sometimes one, sometimes all of them.
+            Set your notes in motion. With every turn, a strategy guides the
+            voices. Sometimes shifting one, sometimes drifting all.
           </p>
           <p>
-            No need to name chords. Harmony emerges as a byproduct of small
-            movements, feeling inevitable without being predictable.
+            Forget the names of chords. Here, harmony emerges as a byproduct of
+            small, organic movements - feeling inevitable without being
+            predictable.
           </p>
-          <p>No wrong answers. Export what you find.</p>
+          <p>
+            No wrong answers. Just a natural course to follow. Find your flow,
+            then export the discovery.
+          </p>
         </div>
 
         <button class="close-btn" @click="$emit('close')">close</button>
