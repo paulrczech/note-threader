@@ -20,11 +20,9 @@
                   class="note-select"
                   :style="{ color: voiceColors[v] }"
                 >
-                  <option
-                    v-for="midi in validMidiRange"
-                    :key="midi"
-                    :value="midi"
-                  >{{ midiToName(midi) }}</option>
+                  <option v-for="midi in validMidiRange" :key="midi" :value="midi">
+                    {{ midiToName(midi) }}
+                  </option>
                 </select>
               </div>
               <div class="edit-actions">
@@ -42,15 +40,9 @@
               :class="{
                 current: i === sequence.length - 1,
                 'loop-origin': i === loopPoint,
-                swiped: swipedIndex === i,
                 playing: i === playingIndex,
               }"
-              @click="onEntryClick(cluster, i)"
-              @touchstart="onTouchStart($event, i)"
-              @touchmove="onTouchMove($event, i)"
-              @touchend="onTouchEnd(i)"
-              @mouseleave="cancelSwipe(i)"
-              :style="swipeStyle(i)"
+              @click="onEntryClick(cluster)"
             >
               <span class="entry-index">{{ i + 1 }}</span>
               <span
@@ -59,23 +51,17 @@
                 class="entry-note"
                 :style="{ color: voiceColors[v] }"
               >{{ midiToName(midi) }}</span>
-              <button
-                class="edit-btn"
-                @click.stop="startEdit(cluster, i)"
-                title="edit notes"
-              >✎</button>
+              <div class="row-actions">
+                <button class="action-btn" @click.stop="startEdit(cluster, i)" title="edit notes">
+                  <IonIcon :icon="createOutline" />
+                </button>
+                <button class="action-btn delete-btn" @click.stop="confirmDelete(i)" title="delete">
+                  <IonIcon :icon="trashOutline" />
+                </button>
+              </div>
               <IonReorder v-if="i > 0" class="reorder-handle" />
               <span v-else class="reorder-spacer" />
             </div>
-
-            <!-- Delete action revealed on swipe -->
-            <button
-              class="delete-action"
-              :class="{ visible: swipedIndex === i }"
-              @click.stop="confirmDelete(i)"
-            >
-              delete
-            </button>
           </template>
         </div>
       </IonReorderGroup>
@@ -85,14 +71,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IonReorderGroup, IonReorder } from '@ionic/vue'
+import { IonReorderGroup, IonReorder, IonIcon } from '@ionic/vue'
+import { trashOutline, createOutline } from 'ionicons/icons'
 import type { Cluster } from '../../utils/noteUtils'
 import { sortCluster, isValidCluster } from '../../utils/noteUtils'
 import { midiToName, MIDI_MIN, MIDI_MAX, MAX_CLUSTER_SPREAD } from '../../data/notes'
 
 const VOICE_COLORS = ['var(--voice-1)', 'var(--voice-2)', 'var(--voice-3)', 'var(--voice-4)']
-const SWIPE_THRESHOLD = 60
-const DELETE_THRESHOLD = 120
 
 const props = defineProps<{
   sequence: Cluster[]
@@ -116,7 +101,6 @@ const editValues = ref<number[]>([])
 const editError = ref('')
 
 function startEdit(cluster: Cluster, index: number) {
-  cancelSwipe(index)
   editingIndex.value = index
   editValues.value = [...sortCluster(cluster)]
   editError.value = ''
@@ -133,92 +117,23 @@ function commitEdit(index: number) {
   emit('edit', index, newCluster)
 }
 
-function onReorder(event: CustomEvent) {
-  const { from, to } = event.detail
-  event.detail.complete(false)  // let Vue/Pinia handle the DOM update
-  const safeTo = Math.max(1, to)
-  if (from !== safeTo && from > 0) emit('reorder', from, safeTo)
-}
-
 function cancelEdit() {
   editingIndex.value = null
   editError.value = ''
 }
 
-// Swipe state
-const swipedIndex = ref<number | null>(null)
-const swipeOffset = ref(0)
-
-let touchStartX = 0
-let touchStartY = 0
-let activeTouchIndex = -1
-let isScrolling: boolean | null = null
-
-function onTouchStart(e: TouchEvent, index: number) {
-  touchStartX = e.touches[0].clientX
-  touchStartY = e.touches[0].clientY
-  activeTouchIndex = index
-  isScrolling = null
+function onReorder(event: CustomEvent) {
+  const { from, to } = event.detail
+  event.detail.complete(false)
+  const safeTo = Math.max(1, to)
+  if (from !== safeTo && from > 0) emit('reorder', from, safeTo)
 }
 
-function onTouchMove(e: TouchEvent, index: number) {
-  if (activeTouchIndex !== index) return
-
-  const dx = e.touches[0].clientX - touchStartX
-  const dy = e.touches[0].clientY - touchStartY
-
-  if (isScrolling === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
-    isScrolling = Math.abs(dy) > Math.abs(dx)
-  }
-
-  if (isScrolling) return
-  if (dx > 0) return
-
-  e.preventDefault()
-  swipedIndex.value = index
-  swipeOffset.value = Math.max(dx, -DELETE_THRESHOLD - 20)
-}
-
-function onTouchEnd(index: number) {
-  if (isScrolling || activeTouchIndex !== index) return
-
-  if (swipeOffset.value < -DELETE_THRESHOLD) {
-    confirmDelete(index)
-  } else if (swipeOffset.value < -SWIPE_THRESHOLD) {
-    swipeOffset.value = -SWIPE_THRESHOLD
-  } else {
-    cancelSwipe(index)
-  }
-
-  activeTouchIndex = -1
-}
-
-function cancelSwipe(index: number) {
-  if (swipedIndex.value === index) {
-    swipedIndex.value = null
-    swipeOffset.value = 0
-  }
-}
-
-function swipeStyle(index: number): Record<string, string> {
-  if (swipedIndex.value !== index) return {}
-  return {
-    transform: `translateX(${swipeOffset.value}px)`,
-    transition: activeTouchIndex === index ? 'none' : 'transform 0.2s ease',
-  }
-}
-
-function onEntryClick(cluster: Cluster, index: number) {
-  if (swipedIndex.value === index && swipeOffset.value < -10) {
-    cancelSwipe(index)
-    return
-  }
+function onEntryClick(cluster: Cluster) {
   emit('audition', cluster)
 }
 
 function confirmDelete(index: number) {
-  swipedIndex.value = null
-  swipeOffset.value = 0
   emit('delete', index)
 }
 </script>
@@ -265,7 +180,6 @@ function confirmDelete(index: number) {
 }
 
 .history-entry:hover { background: var(--color-surface); }
-.history-entry:hover .edit-btn { opacity: 1; }
 .history-entry.current {
   background: var(--color-surface);
   border-color: var(--color-border);
@@ -287,16 +201,17 @@ function confirmDelete(index: number) {
   right: 0;
   top: 0;
   bottom: 0;
-  width: 72px;
+  width: 52px;
   background: #8b3030;
   border: none;
   color: #fff;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: 1rem;
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s;
-  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .delete-action.visible { opacity: 1; }
 
@@ -328,27 +243,32 @@ function confirmDelete(index: number) {
 
 .reorder-spacer {
   flex-shrink: 0;
-  width: 24px;  /* matches IonReorder default width */
+  width: 24px;
 }
 
-.edit-btn {
+.row-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  flex-shrink: 0;
+}
+
+.action-btn {
   background: none;
   border: none;
   color: var(--color-text-dim);
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   cursor: pointer;
-  padding: 0 0.1rem;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
-  flex-shrink: 0;
+  padding: 0.2rem 0.25rem;
   line-height: 1;
+  border-radius: 4px;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
 }
-.edit-btn:hover { color: var(--color-accent); }
-
-@media (hover: none) {
-  .edit-btn { opacity: 0.5; }
-}
+.action-btn:hover { color: var(--color-accent); }
+.action-btn.delete-btn:hover { color: #e07878; }
 
 .edit-voices {
   display: flex;
