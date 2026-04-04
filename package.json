@@ -20,6 +20,7 @@
     "@ionic/vue": "^8.0.0",
     "@ionic/vue-router": "^8.0.0",
     "@tonejs/midi": "^2.0.28",
+    "force": "^0.0.3",
     "ionicons": "^7.0.0",
     "pinia": "^3.0.4",
     "tone": "^15.1.22",

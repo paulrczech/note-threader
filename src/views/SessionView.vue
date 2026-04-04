@@ -163,6 +163,19 @@
             @octave-down="transposeOctave(-1)" />
 
           <div class="playback-settings">
+            <!-- Instrument -->
+            <select
+              class="instrument-select"
+              :value="settingsStore.instrument"
+              @change="settingsStore.setInstrument(($event.target as HTMLSelectElement).value as any)">
+              <option value="piano">piano</option>
+              <option value="harp">harp</option>
+              <option value="guitar-acoustic">guitar (ac)</option>
+              <option value="guitar-nylon">guitar (ny)</option>
+              <option value="cello">cello</option>
+              <option value="violin">violin</option>
+            </select>
+
             <!-- Tempo -->
             <div class="tempo-control">
               <button class="adj-btn" @click="adjustTempo(-5)">−</button>
@@ -209,7 +222,8 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+  import { ref, computed, watch, onUnmounted } from 'vue'
+  import { onIonViewWillEnter } from '@ionic/vue'
   import { useRouter } from 'vue-router'
   import {
     IonPage,
@@ -306,7 +320,7 @@
     direction: settingsStore.arpeggioDirection,
   }))
 
-  onMounted(() => {
+  onIonViewWillEnter(() => {
     if (!sequenceStore.currentCluster) {
       router.replace('/')
       return
@@ -473,7 +487,7 @@
   }
 
   function save() {
-    saveSession(sequenceStore.sequence, settingsStore.voiceCount)
+    saveSession(sequenceStore.sequence, settingsStore.voiceCount, settingsStore.instrument)
     savedFlash.value = true
     setTimeout(() => {
       savedFlash.value = false
@@ -680,6 +694,18 @@
     display: flex;
     align-items: center;
     gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .instrument-select {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-dim);
+    font-size: 0.7rem;
+    padding: 0.25rem 0.4rem;
+    font-family: inherit;
+    cursor: pointer;
   }
 
   .tempo-control {

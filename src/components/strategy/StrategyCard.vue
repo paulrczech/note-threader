@@ -1,21 +1,33 @@
 <template>
-  <div class="strategy-card">
-    <p class="strategy-label">the drift</p>
+  <div class="strategy-card" :class="{ collapsed }">
 
-    <div class="strategy-body">
-      <p class="strategy-text">{{ strategy.text }}</p>
-      <button
-        id="hint-trigger"
-        class="hint-btn"
-        aria-label="What does this mean?">
-        ⓘ
+    <!-- Header row — always visible -->
+    <div class="strategy-header">
+      <button class="collapse-btn" @click="collapsed = !collapsed" aria-label="toggle drift">
+        <span class="strategy-label">the drift</span>
+        <span class="chevron">{{ collapsed ? '▸' : '▾' }}</span>
       </button>
+
+      <template v-if="collapsed">
+        <p class="strategy-text-collapsed">{{ strategy.text }}</p>
+        <button class="hint-btn" aria-label="What does this mean?" @click="hintOpen = true">ⓘ</button>
+        <button class="icon-btn" @click="$emit('redraw')" aria-label="another">↺</button>
+      </template>
     </div>
 
+    <!-- Expanded body -->
+    <template v-if="!collapsed">
+      <div class="strategy-body">
+        <p class="strategy-text">{{ strategy.text }}</p>
+        <button class="hint-btn" aria-label="What does this mean?" @click="hintOpen = true">ⓘ</button>
+      </div>
+      <button class="icon-btn redraw-icon" @click="$emit('redraw')" aria-label="another">↺</button>
+    </template>
+
     <IonPopover
-      trigger="hint-trigger"
-      trigger-action="click"
-      :dismiss-on-select="false">
+      :is-open="hintOpen"
+      :dismiss-on-select="false"
+      @did-dismiss="hintOpen = false">
       <IonContent class="ion-padding">
         <p class="hint-text">{{ strategy.hint }}</p>
         <p v-if="strategy.requiresKeyLock" class="hint-lock">
@@ -24,16 +36,19 @@
       </IonContent>
     </IonPopover>
 
-    <button class="redraw-btn" @click="$emit('redraw')">another</button>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { ref } from 'vue'
   import { IonPopover, IonContent } from '@ionic/vue'
   import type { Strategy } from '../../data/strategies'
 
   defineProps<{ strategy: Strategy }>()
   defineEmits<{ redraw: [] }>()
+
+  const collapsed = ref(false)
+  const hintOpen = ref(false)
 </script>
 
 <style scoped>
@@ -47,6 +62,29 @@
     border-radius: 12px;
     padding: 1.1rem 1.4rem;
     text-align: center;
+    transition: padding 0.2s;
+  }
+
+  .strategy-card.collapsed {
+    padding: 0.6rem 1rem;
+  }
+
+  /* Header row */
+  .strategy-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .collapse-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
   }
 
   .strategy-label {
@@ -54,15 +92,36 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--color-text-dim);
-    margin: 0 0 0.4rem;
   }
 
+  .chevron {
+    font-size: 0.55rem;
+    color: var(--color-text-dim);
+  }
+
+  /* Collapsed text — truncated single line */
+  .strategy-text-collapsed {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--color-text);
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+  }
+
+  /* Expanded body */
   .strategy-body {
     display: flex;
     align-items: flex-start;
     justify-content: center;
     gap: 0.4rem;
-    margin-bottom: 0.6rem;
+    margin: 0.5rem 0 0.6rem;
   }
 
   .strategy-text {
@@ -87,26 +146,28 @@
     transition: color 0.15s;
     line-height: 1;
   }
-  .hint-btn:hover {
-    color: var(--color-accent);
-  }
+  .hint-btn:hover { color: var(--color-accent); }
 
-  .redraw-btn {
+  .icon-btn {
     background: none;
     border: none;
-    font-size: 0.65rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font-size: 1rem;
     color: var(--color-text-dim);
     cursor: pointer;
     padding: 0;
+    flex-shrink: 0;
+    line-height: 1;
     transition: color 0.15s;
   }
-  .redraw-btn:hover {
-    color: var(--color-accent);
+  .icon-btn:hover { color: var(--color-accent); }
+
+  .redraw-icon {
+    display: block;
+    margin: 0 auto;
+    font-size: 1.1rem;
   }
 
-  /* Popover content styles (unscoped override via global) */
+  /* Popover content */
   .hint-text {
     font-size: 0.85rem;
     line-height: 1.5;

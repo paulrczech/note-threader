@@ -38,11 +38,11 @@
             <div
               class="history-entry"
               :class="{
-                current: i === sequence.length - 1,
+                current: i === activeIndex,
                 'loop-origin': i === loopPoint,
                 playing: i === playingIndex,
               }"
-              @click="onEntryClick(cluster)"
+              @click="onEntryClick(cluster, i)"
             >
               <span class="entry-index">{{ i + 1 }}</span>
               <span
@@ -59,8 +59,7 @@
                   <IonIcon :icon="trashOutline" />
                 </button>
               </div>
-              <IonReorder v-if="i > 0" class="reorder-handle" />
-              <span v-else class="reorder-spacer" />
+              <IonReorder class="reorder-handle" :style="{ opacity: sequence.length < 2 ? 0 : 0.4 }" />
             </div>
           </template>
         </div>
@@ -70,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { IonReorderGroup, IonReorder, IonIcon } from '@ionic/vue'
 import { trashOutline, createOutline } from 'ionicons/icons'
 import type { Cluster } from '../../utils/noteUtils'
@@ -94,6 +93,10 @@ const emit = defineEmits<{
 
 const voiceColors = VOICE_COLORS
 const validMidiRange = Array.from({ length: MIDI_MAX - MIDI_MIN + 1 }, (_, i) => MIDI_MIN + i)
+
+// Track which row is highlighted as active (defaults to last, follows clicks)
+const activeIndex = ref(props.sequence.length - 1)
+watch(() => props.sequence.length, (len) => { activeIndex.value = len - 1 })
 
 // Edit state
 const editingIndex = ref<number | null>(null)
@@ -125,11 +128,11 @@ function cancelEdit() {
 function onReorder(event: CustomEvent) {
   const { from, to } = event.detail
   event.detail.complete(false)
-  const safeTo = Math.max(1, to)
-  if (from !== safeTo && from > 0) emit('reorder', from, safeTo)
+  if (from !== to) emit('reorder', from, to)
 }
 
-function onEntryClick(cluster: Cluster) {
+function onEntryClick(cluster: Cluster, index: number) {
+  activeIndex.value = index
   emit('audition', cluster)
 }
 
@@ -241,10 +244,6 @@ function confirmDelete(index: number) {
   opacity: 0.4;
 }
 
-.reorder-spacer {
-  flex-shrink: 0;
-  width: 24px;
-}
 
 .row-actions {
   margin-left: auto;

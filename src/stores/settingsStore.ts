@@ -6,7 +6,7 @@ export type MovementSize = 'half' | 'step' | 'whole' | 'third' | 'free'
 export type KeyLockMode = 'free' | 'diatonic' | 'modal'
 export type LoopMode = 'auto' | 'manual' | 'capped'
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
-export type InstrumentType = 'piano' | 'strings' | 'synth' | 'pluck' | 'harp'
+export type InstrumentType = 'piano' | 'harp' | 'guitar-acoustic' | 'guitar-nylon' | 'cello' | 'violin'
 
 export const useSettingsStore = defineStore('settings', () => {
   const voiceCount = ref<VoiceCount>(3)

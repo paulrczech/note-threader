@@ -1,4 +1,5 @@
 import type { Cluster } from './noteUtils'
+import type { InstrumentType } from '../stores/settingsStore'
 
 export interface SavedSession {
   id: string
@@ -6,6 +7,7 @@ export interface SavedSession {
   savedAt: number       // Unix ms timestamp
   sequence: Cluster[]
   voiceCount: number
+  instrument?: InstrumentType  // optional for backwards compat with older saves
 }
 
 const STORAGE_KEY = 'note-threader-sessions'
@@ -27,7 +29,7 @@ export function listSessions(): SavedSession[] {
   return loadAll().sort((a, b) => b.savedAt - a.savedAt)
 }
 
-export function saveSession(sequence: Cluster[], voiceCount: number, name?: string): SavedSession {
+export function saveSession(sequence: Cluster[], voiceCount: number, instrument?: InstrumentType, name?: string): SavedSession {
   const sessions = loadAll()
   const session: SavedSession = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -35,6 +37,7 @@ export function saveSession(sequence: Cluster[], voiceCount: number, name?: stri
     savedAt: Date.now(),
     sequence,
     voiceCount,
+    instrument,
   }
   sessions.push(session)
   saveAll(sessions)

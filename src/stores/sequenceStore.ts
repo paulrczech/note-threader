@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Cluster, sortCluster, isValidCluster } from '../utils/noteUtils'
-import { MIDI_SEED_MIN, MIDI_SEED_MAX, MIDI_MIN, MIDI_MAX } from '../data/notes'
+import { MIDI_SEED_MAX, MIDI_MIN, MIDI_MAX } from '../data/notes'
 
 export const useSequenceStore = defineStore('sequence', () => {
   const sequence = ref<Cluster[]>([])
@@ -43,9 +43,9 @@ export const useSequenceStore = defineStore('sequence', () => {
     // Previous approach broke early when notes went too high, producing silent failures.
     for (let attempt = 0; attempt < 30; attempt++) {
       notes = []
-      // Seed in lower half of zone so there's always room to add voices above
-      const seedRange = Math.floor((MIDI_SEED_MAX - MIDI_SEED_MIN) / 2)
-      notes.push(MIDI_SEED_MIN + Math.floor(Math.random() * seedRange))
+      // Seed anywhere from MIDI_MIN up to MIDI_SEED_MAX, leaving headroom for voices above
+      const seedRange = MIDI_SEED_MAX - MIDI_MIN
+      notes.push(MIDI_MIN + Math.floor(Math.random() * seedRange))
 
       while (notes.length < voiceCount) {
         const prev = notes[notes.length - 1]
@@ -132,10 +132,10 @@ export const useSequenceStore = defineStore('sequence', () => {
   }
 
   function reorderSequence(from: number, to: number) {
-    if (from === to || from < 1) return  // seed (index 0) cannot be moved
+    if (from === to) return
     const arr = [...sequence.value]
     const [moved] = arr.splice(from, 1)
-    arr.splice(Math.max(1, to), 0, moved)
+    arr.splice(to, 0, moved)
     sequence.value = arr
     candidates.value = []
     auditioning.value = null

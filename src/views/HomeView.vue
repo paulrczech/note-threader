@@ -40,6 +40,22 @@
           </div>
         </div>
 
+        <!-- Instrument -->
+        <div class="param-group">
+          <p class="param-label">instrument</p>
+          <select
+            class="instrument-select"
+            :value="settingsStore.instrument"
+            @change="settingsStore.setInstrument(($event.target as HTMLSelectElement).value as any)">
+            <option value="piano">piano</option>
+            <option value="harp">harp</option>
+            <option value="guitar-acoustic">guitar (acoustic)</option>
+            <option value="guitar-nylon">guitar (nylon)</option>
+            <option value="cello">cello</option>
+            <option value="violin">violin</option>
+          </select>
+        </div>
+
         <!-- Manual cluster entry (collapsible) -->
         <div class="param-group">
           <button class="ghost-btn" @click="showManual = !showManual">
@@ -97,7 +113,7 @@
   import { useSettingsStore } from '../stores/settingsStore'
   import { useSequenceStore } from '../stores/sequenceStore'
   import { useAudioEngine } from '../composables/useAudioEngine'
-  import { midiToName, MAX_CLUSTER_SPREAD } from '../data/notes'
+  import { midiToName, MIDI_MIN, MIDI_MAX, MAX_CLUSTER_SPREAD } from '../data/notes'
   import { isValidCluster, sortCluster } from '../utils/noteUtils'
 
   const VOICE_COLORS = [
@@ -132,7 +148,7 @@
   const manualMidi = ref<number[]>([60, 64, 67, 71])
 
   // All valid MIDI notes for the picker (G3–C6)
-  const validMidiRange = Array.from({ length: 84 - 55 + 1 }, (_, i) => 55 + i)
+  const validMidiRange = Array.from({ length: MIDI_MAX - MIDI_MIN + 1 }, (_, i) => MIDI_MIN + i)
 
   async function startRandom() {
     await init(settingsStore.instrument)
@@ -141,6 +157,7 @@
   }
 
   async function loadSession(session: SavedSession) {
+    if (session.instrument) settingsStore.setInstrument(session.instrument)
     await init(settingsStore.instrument)
     settingsStore.setVoiceCount(session.voiceCount as 3 | 4)
     sequenceStore.start(session.sequence[0])
@@ -288,6 +305,19 @@
     font-family: 'SF Mono', 'Fira Code', monospace;
     letter-spacing: 0.06em;
     width: 2rem;
+  }
+
+  .instrument-select {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text);
+    font-size: 0.8rem;
+    padding: 0.4rem 0.7rem;
+    font-family: inherit;
+    cursor: pointer;
+    width: 100%;
+    max-width: 220px;
   }
 
   .note-select {

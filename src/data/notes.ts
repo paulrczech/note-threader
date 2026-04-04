@@ -9,7 +9,7 @@ export const MIDI_SEED_MIN = 60  // C4 — low end of seed zone
 export const MIDI_SEED_MAX = 72  // C5 — high end of seed zone
 
 // Max semitone spread between lowest and highest voice in a cluster
-export const MAX_CLUSTER_SPREAD = 24  // two octaves
+export const MAX_CLUSTER_SPREAD = 31  // two and a half octaves
 
 export function midiToName(midi: number): string {
   const octave = Math.floor(midi / 12) - 1

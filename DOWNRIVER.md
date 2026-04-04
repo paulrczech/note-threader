@@ -1,0 +1,128 @@
+# Eddy — Downriver
+
+Ideas, possibilities, and future directions. Added to as inspiration strikes. No commitment to timeline or order — just the vision.
+
+---
+
+## Near-Term (V2–V3)
+
+### Per-Voice Instrument Routing
+Each voice gets its own instrument. V1 = cello, V2/V3 = violin, V4 = harp. Turns Eddy into a genuine chamber ensemble sketch tool. Engine is already built for single-sampler — needs multi-sampler routing layer.
+
+### Gravity / Tendency Fields
+Voices have subtle "pull" toward certain notes — tonal gravity without naming chords. A C-center makes C, E, G feel like rest points. Voices don't have to land there, but they're drawn. Users feel it, never see a theory label.
+
+### Session Branching
+Fork the flow at any point. Two branches from the same moment, diverging. Compare them side by side. Something no DAW does elegantly.
+
+### Probabilistic Strategy Weights
+Let users nudge how often certain strategies appear — sliders, not labels. "More contrary motion. Less parallel." Musical character shifts without exposing music theory.
+
+### 5-Voice Support
+Already flagged in V2 constraints. Natural extension once the core is stable.
+
+### Voice Identity & Crossing (V2)
+Currently voices are positional — lowest note is always V1, colors are positional. True voice identity would track each line across moves so colors follow the voice, not the position. This enables voice crossing (V2 dipping below V1, etc.) which is musically legitimate and happens constantly in real composition.
+
+**Scope:** Crossing should only be allowed in Stream Edit mode inside the flow — not on the home screen starting note picker, where sorted ascending remains correct.
+
+**Visual payoff:** Voice lines in the "River" view would visibly weave and cross, which is the musically true picture. Requires refactoring `Cluster` from a sorted array to an identity-tracked structure — meaningful but beautiful.
+
+**It's one coherent feature, not four separate ones:**
+- `Cluster` gets voice identity (not just sorted position)
+- `generateCandidates` respects and propagates identity through each move
+- Stream edit allows crossing
+- Candidates generated from a crossed state reflect that state — the river flows from where it actually is
+- The River view shows it all as truthfully weaving lines
+
+Currently `generateCandidates` calls `sortCluster` on every output, which silently "fixes" any crossing. A user who deliberately crosses voices in edit mode would find the next candidates pretending it didn't happen — the river corrected against its will. This is the core thing to fix.
+
+### Instrument Selector in Session View
+Currently set only on home screen. Allow changing mid-session without losing the flow.
+
+---
+
+## Medium-Term — The Big Leaps
+
+### Eddy as a Live Performance Instrument
+MIDI out. Every confirmed cluster fires a MIDI chord in real time into Ableton, Logic, any synth. The voice leading engine becomes a live harmonizer controller. Genuinely novel — no tool does this.
+
+### Multi-User / Collaborative Sessions
+Two people, same flow, different voices. V1/V2 are yours, V3/V4 are mine. The harmony is negotiated in real time, not composed. Musical conversation with no theory required.
+
+### Eddy as Accompaniment / Harmonizer
+You sing or play a melody. Eddy detects the pitch, assigns your note to a voice, generates the others via voice leading. Your melody becomes the top voice. Eddy harmonizes beneath you in real time.
+
+### The "River" View
+A full visual of the flow as a flowing stream — each voice a colored line weaving through time, intervals between them visible as the space between lines. Not a score, not a piano roll — something new. Exportable as video art alongside the audio.
+
+### Emotional Arc Mapping
+Each cluster gets a tension score (dissonanceRank already exists). The flow becomes a tension curve over time. User draws an arc — tense peak, then release — and Eddy steers voice movement toward it. Narrative shape without naming a single chord.
+
+---
+
+## Lateral / Outside the Box
+
+### Eddy as Compositional Memory
+Every session ever created, indexed. Over time Eddy recognizes tendencies — which strategies you keep, which you skip, which clusters you favor. Personalized drift suggestions from your own musical fingerprint. Pattern recognition, not AI hype.
+
+### Scored Output / Generative Sheet Music
+Not a MIDI file — rendered notation. Each voice on its own staff, formatted as string quartet or SATB. Export as PDF. Composers use Eddy as a sketch tool that produces readable scores.
+
+### Eddy for Film / Game Scoring
+"Mood lock" mode — constrain the flow within a tension band. Tense scene: keep dissonance high. Resolution: drift toward consonance. Composer sets emotional boundaries, Eddy navigates within them. Procedural underscore without a theory degree.
+
+### Physical / Hardware Version
+Four physical knobs or sliders, one per voice. Strategy card on a small screen. Eddy as a hardware instrument on a desk next to a synth. Very Teenage Engineering territory.
+
+### Tuning System Exploration
+Voices move in just intonation, quarter-tones, 19-TET instead of equal temperament. Eddy becomes a microtonal harmony tool using the same drift mechanic — no theory required, just ear and movement.
+
+### Eddy as a Teaching Tool
+"Why did that work?" mode — after confirming a cluster, Eddy shows what interval relationship changed and why it sounds the way it does. Theory revealed as a consequence of playing, not a prerequisite.
+
+---
+
+---
+
+## Native Mobile Build (Capacitor / iOS)
+
+### Status
+Capacitor is already installed (`@capacitor/core`, `@capacitor/app`, `@capacitor/haptics`, `@capacitor/keyboard`, `@capacitor/status-bar`). Not yet activated — no iOS platform added yet. Xcode build required on iMac.
+
+### Requirements
+- Apple Developer Account ($99/year) — needed for device install and eventual App Store release
+- Xcode on iMac — Capacitor iOS builds require Xcode on macOS
+
+### Build Steps (when ready)
+1. `npx cap add ios` — adds the iOS platform
+2. `npm run build` — builds the web app
+3. `npx cap sync` — copies web build into Xcode project
+4. Open in Xcode: `npx cap open ios`
+5. Select device, build and run
+
+### Share / Export (native)
+Add `@capacitor/share` plugin. Wire up MIDI and text export buttons to the native iOS share sheet (AirDrop, Messages, Mail, Files, Notes, etc.). This replaces the current browser `navigator.clipboard` and file download approach.
+
+### UI Pass for Mobile
+- Safe area insets (notch, home indicator, status bar)
+- Touch target audit — some buttons may be tight for thumbs
+- IonPicker for note selection (drum-roll style) — revisit when doing native build
+- Platform-adaptive UI: Ionic handles most of this, targeted pass needed
+
+### Sample Bundling (before App Store release)
+Currently all samples (piano, harp, guitars, cello, violin) load from external CDNs. For App Store submission, bundle samples locally inside the app for reliability and offline use. Larger binary but fully self-contained — required for a robust public release.
+
+### Privacy
+Eddy stores nothing remotely, no accounts, no tracking. Privacy policy is a one-pager. Clean App Store story.
+
+### Scope
+iOS only for personal use first. Android is `npx cap add android` when ready — same codebase, targeted UI pass for Android patterns.
+
+---
+
+## The Largest Vision
+
+Eddy as the **pencil sketch tool of harmonic composition** — the thing you reach for before opening a DAW. Fast, intuitive, no theory gatekeeping. The way GarageBand democratized recording, Eddy could democratize harmony.
+
+The tagline already says it: *"let the music move itself."* That's not just a feature — it's a worldview about how music gets made.
