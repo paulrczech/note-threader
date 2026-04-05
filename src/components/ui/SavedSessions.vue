@@ -1,34 +1,29 @@
 <template>
-  <div v-if="sessions.length > 0" class="saved-sessions">
-    <p class="section-label">saved sessions</p>
-    <div class="session-list">
+  <div class="saved-sessions">
+    <p class="sheet-title">past flows</p>
+    <p class="sheet-label">saved sessions</p>
+    <div v-if="sessions.length === 0" class="empty-msg">no saved flows yet</div>
+    <div v-else class="session-list">
       <div v-for="s in sessions" :key="s.id" class="session-row">
-        <div class="session-load" :class="{ editing: editingId === s.id }">
-          <!-- Name edit input -->
-          <input
-            v-if="editingId === s.id"
-            :ref="el => { if (el) editInputs[s.id] = el as HTMLInputElement }"
-            class="session-name-input"
-            v-model="editName"
-            @keydown.enter="commitRename(s.id)"
-            @keydown.escape="cancelRename"
-            @blur="commitRename(s.id)"
-          />
+        <!-- Name edit input -->
+        <input
+          v-if="editingId === s.id"
+          :ref="el => { if (el) editInputs[s.id] = el as HTMLInputElement }"
+          class="session-name-input"
+          v-model="editName"
+          @keydown.enter="commitRename(s.id)"
+          @keydown.escape="cancelRename"
+          @blur="commitRename(s.id)"
+        />
 
-          <!-- Normal row — click name to edit, click elsewhere to load -->
-          <template v-else>
-            <span
-              class="session-name"
-              @click.stop="startRename(s)"
-              title="tap to rename"
-            >{{ s.name }}</span>
-            <button class="session-load-btn" @click="$emit('load', s)">
-              <span class="session-meta">{{ s.sequence.length }} clusters · {{ s.voiceCount }}v ›</span>
-            </button>
-          </template>
-        </div>
-
-        <button class="session-delete" @click="remove(s.id)">×</button>
+        <!-- Normal row -->
+        <template v-else>
+          <button class="session-load-btn" @click="$emit('load', s)">
+            <span class="session-name" @click.stop="startRename(s)">{{ s.name }}</span>
+            <span class="session-meta">{{ s.sequence.length }} clusters · {{ s.voiceCount }}v ›</span>
+          </button>
+          <button class="session-delete" @click="remove(s.id)">×</button>
+        </template>
       </div>
     </div>
   </div>
@@ -55,9 +50,7 @@ function remove(id: string) {
 function startRename(s: SavedSession) {
   editingId.value = s.id
   editName.value = s.name
-  nextTick(() => {
-    editInputs[s.id]?.select()
-  })
+  nextTick(() => { editInputs[s.id]?.select() })
 }
 
 function commitRename(id: string) {
@@ -76,57 +69,67 @@ function cancelRename() {
 </script>
 
 <style scoped>
-.saved-sessions { width: 100%; }
+.saved-sessions { width: 100%; padding: .5rem; }
 
 .section-label {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-text-dim);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.6rem;
+}
+
+.empty-msg {
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+  font-style: italic;
+  padding: 1rem 0;
 }
 
 .session-list {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
 }
 
 .session-row {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  background: var(--color-surface);
+  border: none;
+  min-height: 52px;
 }
+.session-row + .session-row { border-top: 1px solid var(--color-border); }
 
-.session-load {
+.session-load-btn {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 0.45rem 0.75rem;
+  background: none;
+  border: none;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  font-family: inherit;
   min-width: 0;
-  transition: border-color 0.15s;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  text-align: left;
 }
-.session-load.editing {
-  border-color: var(--color-accent);
-}
+.session-load-btn:hover .session-name { color: var(--voice-1); }
 
 .session-name {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: text;
   flex: 1;
   min-width: 0;
-}
-.session-name:hover {
-  color: var(--color-accent);
+  cursor: text;
+  transition: color 0.15s;
 }
 
 .session-name-input {
@@ -135,44 +138,41 @@ function cancelRename() {
   border: none;
   outline: none;
   color: var(--color-text);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-family: inherit;
-  padding: 0;
+  padding: 0.85rem 1rem;
   min-width: 0;
   width: 100%;
 }
 
-.session-load-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-family: inherit;
-  flex-shrink: 0;
+.sheet-title {
+  margin-bottom: 1.5rem;
 }
-.session-load-btn:hover .session-meta {
-  color: var(--color-accent);
+.sheet-label {
+  margin-bottom: .75rem;
 }
 
 .session-meta {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   color: var(--color-text-dim);
   font-family: 'SF Mono', 'Fira Code', monospace;
+  flex-shrink: 0;
   transition: color 0.15s;
 }
+.session-load-btn:hover .session-meta { color: var(--voice-1); }
 
 .session-delete {
   background: none;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border: none;
+  border-left: 1px solid var(--color-border);
   color: var(--color-text-dim);
-  width: 1.6rem;
-  height: 1.6rem;
-  font-size: 0.9rem;
+  width: 2.8rem;
+  align-self: stretch;
+  font-size: 1rem;
   cursor: pointer;
   flex-shrink: 0;
-  transition: border-color 0.15s, color 0.15s;
+  transition: color 0.15s, background 0.15s;
   font-family: inherit;
 }
-.session-delete:hover { border-color: #8b3030; color: #e07878; }
+.session-delete:hover { color: #e07878; background: rgba(224, 120, 120, 0.08); }
 </style>
