@@ -8,6 +8,14 @@ export type LoopMode = 'auto' | 'manual' | 'capped'
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 export type InstrumentType = 'piano' | 'harp' | 'guitar-acoustic' | 'guitar-nylon' | 'cello' | 'violin'
 
+const DEFAULTS_KEY = 'eddy_defaults'
+
+interface StoredDefaults {
+  voiceCount: VoiceCount
+  movementSize: MovementSize
+  instrument: InstrumentType
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   const voiceCount = ref<VoiceCount>(3)
   const movementSize = ref<MovementSize>('step')
@@ -33,6 +41,28 @@ export const useSettingsStore = defineStore('settings', () => {
   function setArpeggioDirection(d: ArpeggioDirection) { arpeggioDirection.value = d }
   function setInstrument(i: InstrumentType) { instrument.value = i }
 
+  function saveAsDefault() {
+    const defaults: StoredDefaults = {
+      voiceCount: voiceCount.value,
+      movementSize: movementSize.value,
+      instrument: instrument.value,
+    }
+    localStorage.setItem(DEFAULTS_KEY, JSON.stringify(defaults))
+  }
+
+  function loadDefaults() {
+    try {
+      const raw = localStorage.getItem(DEFAULTS_KEY)
+      if (!raw) return
+      const defaults = JSON.parse(raw) as StoredDefaults
+      if (defaults.voiceCount) voiceCount.value = defaults.voiceCount
+      if (defaults.movementSize) movementSize.value = defaults.movementSize
+      if (defaults.instrument) instrument.value = defaults.instrument
+    } catch {
+      // corrupt storage — ignore
+    }
+  }
+
   return {
     voiceCount,
     movementSize,
@@ -55,5 +85,7 @@ export const useSettingsStore = defineStore('settings', () => {
     setTempo,
     setArpeggioDirection,
     setInstrument,
+    saveAsDefault,
+    loadDefaults,
   }
 })

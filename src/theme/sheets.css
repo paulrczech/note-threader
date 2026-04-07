@@ -1,0 +1,66 @@
+/* Eddy — Sheet modal shared styles
+   Used by: settings sheet, past flows sheet, and any future bottom sheets.
+   Import in main.ts. Keep HomeView/component styles scoped. */
+
+.sheet-content {
+  padding: 1.5rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sheet-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-text-dim);
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+
+.sheet-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sheet-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin: 0 0 0.25rem;
+}
+
+/* Stacked full-width option buttons — used in settings sheet */
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.option-btn {
+  width: 100%;
+  background: var(--color-surface);
+  border: none;
+  border-radius: 0;
+  color: var(--color-text-dim);
+  font-size: 0.95rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+  text-align: left;
+  min-height: 48px;
+}
+.option-btn + .option-btn { border-top: 1px solid var(--color-border); }
+.option-btn:hover { background: rgba(255, 255, 255, 0.03); }
+.option-btn.active {
+  color: var(--voice-1);
+  background: rgba(99, 144, 148, 0.1);
+  border-left: 2px solid var(--voice-1);
+}

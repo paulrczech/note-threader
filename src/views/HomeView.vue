@@ -13,47 +13,63 @@
 
         <!-- Trigger rows -->
         <div class="secondary-block">
-
           <!-- The current (settings) -->
           <button class="trigger-row" @click="settingsOpen = true">
             <span class="trigger-label">the current</span>
-            <span class="trigger-value">{{ voiceCount }}v · {{ movementLabel }} · {{ instrumentLabel }}</span>
+            <span class="trigger-value"
+              >{{ voiceCount }}v · {{ movementLabel }} ·
+              {{ instrumentLabel }}</span
+            >
             <span class="trigger-arrow">›</span>
           </button>
 
           <!-- Past flows (saved sessions) -->
           <button class="trigger-row" @click="openSessions">
             <span class="trigger-label">past flows</span>
-            <span class="trigger-value">{{ sessionCount > 0 ? sessionCount : 'none' }}</span>
+            <span class="trigger-value">{{
+              sessionCount > 0 ? sessionCount : 'none'
+            }}</span>
             <span class="trigger-arrow">›</span>
           </button>
 
           <!-- The source (starting notes) -->
-          <button class="trigger-row" @click="openPicker">
-            <span class="trigger-label">the source</span>
-            <span class="trigger-value">
-              <template v-if="showManual">
-                <span
-                  v-for="(midi, i) in manualMidi.slice(0, voiceCount)"
-                  :key="i"
-                  class="preview-note"
-                  :style="{ color: voiceColors[i] }">
-                  {{ midiToName(midi) }}
-                </span>
-              </template>
-              <template v-else>
-                <span class="trigger-hint-main">random</span>
-                <span class="trigger-hint-sub">tap to choose</span>
-              </template>
-            </span>
-            <span class="trigger-arrow">›</span>
-          </button>
-
+          <div class="trigger-row trigger-row--source">
+            <button class="source-main" @click="openPicker">
+              <span class="trigger-label">the source</span>
+              <span
+                class="trigger-value"
+                :class="{ 'trigger-value--notes': showManual }">
+                <template v-if="showManual">
+                  <span
+                    v-for="(midi, i) in manualMidi.slice(0, voiceCount)"
+                    :key="i"
+                    class="preview-note"
+                    :style="{ color: voiceColors[i] }">
+                    {{ midiToName(midi) }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="trigger-hint-main">random</span>
+                  <span class="trigger-hint-sub">tap to choose</span>
+                </template>
+              </span>
+              <span v-if="!showManual" class="trigger-arrow">›</span>
+            </button>
+            <button
+              v-if="showManual"
+              class="source-reset"
+              @click="resetToRandom"
+              title="reset to random">
+              ×
+            </button>
+          </div>
         </div>
 
         <!-- Primary action -->
         <div class="start-block">
-          <button class="start-btn" @click="showManual ? startManual() : startRandom()">
+          <button
+            class="btn-primary"
+            @click="showManual ? startManual() : startRandom()">
             {{ showManual ? 'flow from here' : 'let it flow' }}
           </button>
         </div>
@@ -69,51 +85,55 @@
         :handle="true"
         @did-dismiss="settingsOpen = false">
         <ion-content>
-        <div class="sheet-content">
-          <p class="sheet-title">the current</p>
+          <div class="sheet-content">
+            <p class="sheet-title">the current</p>
 
-          <div class="sheet-group">
-            <p class="sheet-label">voices</p>
-            <div class="option-list">
-              <button
-                v-for="n in [3, 4]"
-                :key="n"
-                class="option-btn"
-                :class="{ active: voiceCount === n }"
-                @click="settingsStore.setVoiceCount(n as 3 | 4)">
-                {{ n }}
-              </button>
+            <div class="sheet-group">
+              <p class="sheet-label">voices</p>
+              <div class="option-list">
+                <button
+                  v-for="n in [3, 4]"
+                  :key="n"
+                  class="option-btn"
+                  :class="{ active: voiceCount === n }"
+                  @click="settingsStore.setVoiceCount(n as 3 | 4)">
+                  {{ n }}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div class="sheet-group">
-            <p class="sheet-label">drift</p>
-            <div class="option-list">
-              <button
-                v-for="m in movementOptions"
-                :key="m.value"
-                class="option-btn"
-                :class="{ active: movementSize === m.value }"
-                @click="settingsStore.setMovementSize(m.value as any)">
-                {{ m.label }}
-              </button>
+            <div class="sheet-group">
+              <p class="sheet-label">drift</p>
+              <div class="option-list">
+                <button
+                  v-for="m in movementOptions"
+                  :key="m.value"
+                  class="option-btn"
+                  :class="{ active: movementSize === m.value }"
+                  @click="settingsStore.setMovementSize(m.value as any)">
+                  {{ m.label }}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div class="sheet-group">
-            <p class="sheet-label">sound</p>
-            <div class="option-list">
-              <button
-                v-for="inst in instrumentOptions"
-                :key="inst.value"
-                class="option-btn"
-                :class="{ active: settingsStore.instrument === inst.value }"
-                @click="settingsStore.setInstrument(inst.value as any)">
-                {{ inst.label }}
-              </button>
+            <div class="sheet-group">
+              <p class="sheet-label">sound</p>
+              <div class="option-list">
+                <button
+                  v-for="inst in instrumentOptions"
+                  :key="inst.value"
+                  class="option-btn"
+                  :class="{ active: settingsStore.instrument === inst.value }"
+                  @click="settingsStore.setInstrument(inst.value as any)">
+                  {{ inst.label }}
+                </button>
+              </div>
             </div>
+
+            <button class="btn-primary" @click="saveDefault()">
+              save as default
+            </button>
           </div>
-        </div>
         </ion-content>
       </IonModal>
 
@@ -124,34 +144,63 @@
         :initial-breakpoint="1"
         :handle="true"
         @did-dismiss="sessionsOpen = false">
-        <ion-content class="ion-padding">
-          <SavedSessions @load="loadSession" />
+        <ion-content>
+          <div class="sheet-content">
+            <SavedSessions @load="loadSession" />
+          </div>
         </ion-content>
       </IonModal>
-
     </ion-content>
 
-    <!-- Note picker — outside ion-content to overlay correctly -->
-    <IonPicker
-      v-if="pickerOpen"
+    <!-- Note picker modal -->
+    <IonModal
+      id="note-picker-modal"
       :is-open="pickerOpen"
-      :buttons="pickerButtons"
-      @did-dismiss="pickerOpen = false">
-      <IonPickerColumn
-        v-for="(_, i) in Array(voiceCount)"
-        :key="i"
-        :value="manualMidi[i]"
-        @ion-change="onColumnChange(i, $event)">
-        <IonPickerColumnOption
-          v-for="midi in validMidiRange"
-          :key="midi"
-          :value="midi"
-          :style="{ color: voiceColors[i] }">
-          {{ midiToName(midi) }}
-        </IonPickerColumnOption>
-      </IonPickerColumn>
-    </IonPicker>
+      style="
+        --height: 244px;
+        --width: 100vw;
+        --border-radius: 12px 12px 0 0;
+        --fade-background-rgb: 5, 5, 5;
+        align-items: flex-end;
+        overflow: hidden;
+      "
+      @did-dismiss="onPickerDismiss">
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonButton @click="cancelPicker">cancel</IonButton>
+          </IonButtons>
+          <IonButtons slot="end">
+            <IonButton @click="confirmPicker">done</IonButton>
+          </IonButtons>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent :scroll-y="false">
+        <IonPicker>
+          <IonPickerColumn
+            v-for="(_, i) in Array(voiceCount)"
+            :key="i"
+            :value="manualMidi[i]"
+            @ion-change="onColumnChange(i, $event)">
+            <IonPickerColumnOption
+              v-for="midi in validMidiRange"
+              :key="midi"
+              :value="midi"
+              :style="{ color: voiceColors[i] }">
+              {{ midiToName(midi) }}
+            </IonPickerColumnOption>
+          </IonPickerColumn>
+        </IonPicker>
+      </IonContent>
+    </IonModal>
 
+    <!-- Save default toast -->
+    <IonToast
+      :is-open="toastOpen"
+      message="default saved"
+      :duration="2000"
+      position="bottom"
+      @did-dismiss="toastOpen = false" />
   </ion-page>
 </template>
 
@@ -162,10 +211,17 @@
     IonPage,
     IonContent,
     IonModal,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
     IonPicker,
     IonPickerColumn,
     IonPickerColumnOption,
+    IonToast,
   } from '@ionic/vue'
+  import { close as closeIcon } from 'ionicons/icons'
   import AboutModal from '../components/ui/AboutModal.vue'
   import SavedSessions from '../components/ui/SavedSessions.vue'
   import type { SavedSession } from '../utils/sessionStorage'
@@ -173,7 +229,12 @@
   import { useSettingsStore } from '../stores/settingsStore'
   import { useSequenceStore } from '../stores/sequenceStore'
   import { useAudioEngine } from '../composables/useAudioEngine'
-  import { midiToName, MIDI_MIN, MIDI_MAX, MAX_CLUSTER_SPREAD } from '../data/notes'
+  import {
+    midiToName,
+    MIDI_MIN,
+    MIDI_MAX,
+    MAX_CLUSTER_SPREAD,
+  } from '../data/notes'
   import { isValidCluster, sortCluster } from '../utils/noteUtils'
 
   const VOICE_COLORS = [
@@ -209,12 +270,16 @@
   const movementSize = computed(() => settingsStore.movementSize)
   const voiceColors = VOICE_COLORS
 
-  const movementLabel = computed(() =>
-    movementOptions.find(m => m.value === movementSize.value)?.label ?? movementSize.value
+  const movementLabel = computed(
+    () =>
+      movementOptions.find((m) => m.value === movementSize.value)?.label ??
+      movementSize.value
   )
 
-  const instrumentLabel = computed(() =>
-    instrumentOptions.find(i => i.value === settingsStore.instrument)?.label ?? settingsStore.instrument
+  const instrumentLabel = computed(
+    () =>
+      instrumentOptions.find((i) => i.value === settingsStore.instrument)
+        ?.label ?? settingsStore.instrument
   )
 
   const showAbout = ref(false)
@@ -226,26 +291,61 @@
   const sessionCount = ref(0)
 
   const manualMidi = ref<number[]>([60, 64, 67, 71])
-  const validMidiRange = Array.from({ length: MIDI_MAX - MIDI_MIN + 1 }, (_, i) => MIDI_MIN + i)
+  const validMidiRange = Array.from(
+    { length: MIDI_MAX - MIDI_MIN + 1 },
+    (_, i) => MIDI_MIN + i
+  )
 
-  const pickerButtons = [
-    {
-      text: 'done',
-      role: 'confirm',
-      handler: () => {
-        pickerOpen.value = false
-        return true
-      },
-    },
-  ]
+  const pickerSnapshot = ref<{ midi: number[]; showManual: boolean } | null>(
+    null
+  )
+  const pickerConfirmed = ref(false)
+  const toastOpen = ref(false)
 
   onMounted(() => {
+    settingsStore.loadDefaults()
     sessionCount.value = listSessions().length
   })
 
   function openPicker() {
+    pickerSnapshot.value = {
+      midi: [...manualMidi.value],
+      showManual: showManual.value,
+    }
+    pickerConfirmed.value = false
     pickerOpen.value = true
     showManual.value = true
+  }
+
+  function confirmPicker() {
+    pickerConfirmed.value = true
+    pickerOpen.value = false
+  }
+
+  function cancelPicker() {
+    pickerOpen.value = false
+  }
+
+  function resetToRandom() {
+    showManual.value = false
+    manualError.value = ''
+  }
+
+  function onPickerDismiss() {
+    pickerOpen.value = false
+    if (!pickerConfirmed.value) {
+      const snap = pickerSnapshot.value
+      if (snap) {
+        manualMidi.value = [...snap.midi]
+        showManual.value = snap.showManual
+      }
+    }
+  }
+
+  function saveDefault() {
+    settingsStore.saveAsDefault()
+    settingsOpen.value = false
+    toastOpen.value = true
   }
 
   function openSessions() {
@@ -291,7 +391,7 @@
   }
 </script>
 
-<style>
+<style scoped>
   .about-btn {
     position: absolute;
     top: 1rem;
@@ -305,7 +405,9 @@
     font-size: 0.85rem;
     cursor: pointer;
     font-family: inherit;
-    transition: border-color 0.15s, color 0.15s;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
     z-index: 10;
   }
   .about-btn:hover {
@@ -323,7 +425,9 @@
   }
 
   /* Title */
-  .title-block { text-align: center; }
+  .title-block {
+    text-align: center;
+  }
 
   .app-title {
     font-family: var(--font-serif);
@@ -368,8 +472,60 @@
     text-align: left;
     min-height: 52px;
   }
-  .trigger-row:hover { background: rgba(255,255,255,0.03); }
-  .trigger-row + .trigger-row { border-top: 1px solid var(--color-border); }
+  .trigger-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .trigger-row + .trigger-row {
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Source row — split into main action + reset button */
+  .trigger-row--source {
+    padding: 0;
+    cursor: default;
+  }
+  .trigger-row--source:hover {
+    background: var(--color-surface);
+  }
+
+  .source-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.95rem 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    min-height: 52px;
+    min-width: 0;
+    transition: background 0.15s;
+  }
+  .source-main:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .source-reset {
+    background: none;
+    border: none;
+    border-left: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    width: 2.8rem;
+    align-self: stretch;
+    font-size: 1.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition:
+      color 0.15s,
+      background 0.15s;
+    font-family: inherit;
+  }
+  .source-reset:hover {
+    color: var(--color-text-dim);
+    background: rgba(255, 255, 255, 0.03);
+  }
 
   .trigger-label {
     font-size: 0.62rem;
@@ -384,7 +540,7 @@
   .trigger-value {
     font-size: 0.85rem;
     color: var(--color-text);
-    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-family: var(--font-mono);
     flex: 1;
     min-width: 0;
     white-space: nowrap;
@@ -399,7 +555,7 @@
   .trigger-hint-main {
     font-size: 0.85rem;
     color: var(--color-text);
-    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-family: var(--font-mono);
   }
 
   .trigger-hint-sub {
@@ -416,19 +572,33 @@
     flex-shrink: 0;
   }
 
+  .trigger-value--notes {
+    justify-content: flex-start;
+    gap: 0;
+  }
+
   .preview-note {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+  }
+  .preview-note + .preview-note::before {
+    content: '·';
+    color: var(--color-text-dim);
+    margin: 0 0.35rem;
   }
 
   /* Primary button */
-  .start-block { width: 100%; }
+  .start-block {
+    width: 100%;
+  }
 
-  .start-btn {
+  .start-btn,
+  .btn-primary {
     width: 100%;
     border-radius: 12px;
     font-size: 1rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     padding: 1rem;
     cursor: pointer;
     font-family: inherit;
@@ -438,7 +608,10 @@
     color: #f2eee3;
     font-weight: 500;
   }
-  .start-btn:hover { opacity: 0.88; }
+  .start-btn:hover,
+  .btn-primary:hover {
+    opacity: 0.88;
+  }
 
   .error-msg {
     font-size: 0.75rem;
@@ -447,68 +620,27 @@
     text-align: center;
   }
 
-  /* Settings sheet */
-  .sheet-content {
-    padding: 1.5rem 1.5rem 3rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-
-  .sheet-title {
-    font-family: var(--font-serif);
-    font-size: 1.1rem;
-    font-weight: 300;
-    font-style: italic;
-    color: var(--color-text-dim);
-    margin: 0;
-    letter-spacing: 0.06em;
-  }
-
-  .sheet-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .sheet-label {
-    font-size: 0.62rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-text-dim);
-    margin: 0 0 0.25rem;
-  }
-
-  /* Stacked full-width option buttons */
-  .option-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-  }
-
-  .option-btn {
+  /* Settings sheet — HomeView-specific */
+  .save-default-btn {
     width: 100%;
-    background: var(--color-surface);
-    border: none;
-    border-radius: 0;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
     color: var(--color-text-dim);
-    font-size: 0.95rem;
-    padding: 0.85rem 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+
+    padding: 0.75rem 1rem;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
     font-family: inherit;
-    text-align: left;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
     min-height: 48px;
   }
-  .option-btn + .option-btn { border-top: 1px solid var(--color-border); }
-  .option-btn:hover { background: rgba(255,255,255,0.03); }
-  .option-btn.active {
-    color: var(--voice-1);
-    background: rgba(126, 184, 212, 0.1);
-    border-left: 2px solid var(--voice-1);
+  .save-default-btn:hover {
+    border-color: var(--color-text-dim);
+    color: var(--color-text);
   }
 </style>
 
@@ -517,14 +649,35 @@
   ion-picker {
     --background: var(--color-bg);
   }
+  ion-modal#note-picker-modal {
+    --max-width: 360px;
+    margin-left: -4px;
+  }
   ion-picker::part(backdrop) {
     opacity: 0.5;
   }
   .picker-before,
   .picker-after {
     opacity: 0.6 !important;
-        background: linear-gradient(to bottom, rgba(var(--fade-background-rgb, var(--background-rgb, var(--ion-background-color-rgb))), 1) 20%, rgba(var(--fade-background-rgb, var(--background-rgb, var(--ion-background-color-rgb))), 0.6) 100%) !important;
-
+    background: linear-gradient(
+      to bottom,
+      rgba(
+          var(
+            --fade-background-rgb,
+            var(--background-rgb, var(--ion-background-color-rgb))
+          ),
+          1
+        )
+        20%,
+      rgba(
+          var(
+            --fade-background-rgb,
+            var(--background-rgb, var(--ion-background-color-rgb))
+          ),
+          0.6
+        )
+        100%
+    ) !important;
   }
   ion-picker ion-picker-column-option.option-selected {
     font-weight: 500;
