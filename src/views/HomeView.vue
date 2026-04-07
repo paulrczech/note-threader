@@ -653,6 +653,14 @@
     --max-width: 360px;
     margin-left: -4px;
   }
+  ion-modal#note-picker-modal ion-button {
+    --color: var(--color-accent);
+  }
+  ion-modal#note-picker-modal ion-button::part(native) {
+    text-transform: none;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+  }
   ion-picker::part(backdrop) {
     opacity: 0.5;
   }
