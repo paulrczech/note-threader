@@ -44,6 +44,7 @@
               }"
               @click="onEntryClick(cluster, i)"
             >
+              <IonReorder class="reorder-handle" :style="{ opacity: sequence.length < 2 ? 0 : 0.4 }" />
               <span class="entry-index">{{ i + 1 }}</span>
               <span
                 v-for="(midi, v) in sortCluster(cluster)"
@@ -59,7 +60,6 @@
                   <IonIcon :icon="trashOutline" />
                 </button>
               </div>
-              <IonReorder class="reorder-handle" :style="{ opacity: sequence.length < 2 ? 0 : 0.4 }" />
             </div>
           </template>
         </div>

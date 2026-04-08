@@ -149,63 +149,6 @@
           </button>
         </div>
 
-        <!-- Playback controls + tempo/direction -->
-        <div class="playback-row">
-          <PlaybackControls
-            :is-playing="isPlaying"
-            :sequence-length="sequenceStore.sequence.length"
-            :can-octave-up="sequenceStore.canTransposeOctave(1)"
-            :can-octave-down="sequenceStore.canTransposeOctave(-1)"
-            @play="playLoop"
-            @stop="audioEngine.stopLoop()"
-            @play-once="playOnce"
-            @octave-up="transposeOctave(1)"
-            @octave-down="transposeOctave(-1)" />
-
-          <div class="playback-settings">
-            <!-- Instrument -->
-            <select
-              class="instrument-select"
-              :value="settingsStore.instrument"
-              @change="settingsStore.setInstrument(($event.target as HTMLSelectElement).value as any)">
-              <option value="piano">piano</option>
-              <option value="harp">harp</option>
-              <option value="guitar-acoustic">guitar (ac)</option>
-              <option value="guitar-nylon">guitar (ny)</option>
-              <option value="cello">cello</option>
-              <option value="violin">violin</option>
-            </select>
-
-            <!-- Tempo -->
-            <div class="tempo-control">
-              <button class="adj-btn" @click="adjustTempo(-5)">−</button>
-              <span class="tempo-value">{{ settingsStore.tempo }}</span>
-              <button class="adj-btn" @click="adjustTempo(5)">+</button>
-              <span class="tempo-unit">bpm</span>
-            </div>
-
-            <!-- Direction -->
-            <div class="toggle-row">
-              <button
-                v-for="d in directionOptions"
-                :key="d.value"
-                class="toggle-btn"
-                :class="{ active: settingsStore.arpeggioDirection === d.value }"
-                @click="settingsStore.setArpeggioDirection(d.value as any)">
-                {{ d.label }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Export row -->
-        <div v-if="sequenceStore.sequence.length > 1" class="export-row">
-          <button class="export-btn" @click="exportMidi">↓ midi</button>
-          <button class="export-btn" @click="copyText">
-            {{ copiedFlash ? 'copied!' : 'copy text' }}
-          </button>
-        </div>
-
         <!-- Sequence history -->
         <SequenceHistory
           v-if="sequenceStore.sequence.length > 0"
@@ -218,6 +161,84 @@
           @reorder="reorderClusters" />
       </div>
     </ion-content>
+
+    <ion-footer class="playback-footer">
+      <div class="footer-bar">
+        <button
+          class="footer-icon-btn play-stop"
+          :class="{ playing: isPlaying }"
+          :disabled="sequenceStore.sequence.length < 1"
+          @click="isPlaying ? audioEngine.stopLoop() : handlePlay()">
+          <ion-icon :icon="isPlaying ? stopOutline : playOutline" />
+        </button>
+        <button
+          class="footer-icon-btn loop-toggle"
+          :class="{ active: loopActive }"
+          @click="toggleLoop">
+          <ion-icon :icon="infiniteOutline" />
+        </button>
+        <ion-select
+          interface="action-sheet"
+          :value="settingsStore.instrument"
+          class="instrument-select"
+          @ionChange="
+            settingsStore.setInstrument(($event as CustomEvent).detail.value)
+          ">
+          <ion-select-option value="piano">piano</ion-select-option>
+          <ion-select-option value="harp">harp</ion-select-option>
+          <ion-select-option value="guitar-acoustic"
+            >guitar (ac)</ion-select-option
+          >
+          <ion-select-option value="guitar-nylon"
+            >guitar (ny)</ion-select-option
+          >
+          <ion-select-option value="cello">cello</ion-select-option>
+          <ion-select-option value="violin">violin</ion-select-option>
+        </ion-select>
+        <button
+          class="footer-expand-btn"
+          :class="{ open: footerExpanded }"
+          @click="footerExpanded = !footerExpanded">
+          <ion-icon
+            :icon="footerExpanded ? chevronDownOutline : chevronUpOutline" />
+        </button>
+      </div>
+
+      <div class="footer-tray" :class="{ open: footerExpanded }">
+        <div class="tray-inner">
+          <div class="tray-row">
+            <div class="toggle-row">
+              <button
+                v-for="d in directionOptions"
+                :key="d.value"
+                class="toggle-btn"
+                :class="{ active: settingsStore.arpeggioDirection === d.value }"
+                @click="settingsStore.setArpeggioDirection(d.value as any)">
+                <ion-icon :icon="d.icon" />
+              </button>
+            </div>
+            <div class="tempo-control">
+              <button class="adj-btn" @click="adjustTempo(-5)">
+                <ion-icon :icon="removeOutline" />
+              </button>
+              <span class="tempo-value">{{ settingsStore.tempo }}</span>
+              <button class="adj-btn" @click="adjustTempo(5)">
+                <ion-icon :icon="addOutline" />
+              </button>
+              <span class="tempo-unit">bpm</span>
+            </div>
+          </div>
+          <div
+            v-if="sequenceStore.sequence.length > 1"
+            class="tray-row export-row">
+            <button class="export-btn" @click="exportMidi">↓ midi</button>
+            <button class="export-btn" @click="copyText">
+              {{ copiedFlash ? 'copied!' : 'copy text' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </ion-footer>
   </ion-page>
 </template>
 
@@ -228,16 +249,33 @@
   import {
     IonPage,
     IonHeader,
+    IonFooter,
     IonToolbar,
     IonTitle,
     IonContent,
     IonButtons,
+    IonSelect,
+    IonSelectOption,
+    IonIcon,
   } from '@ionic/vue'
+  import {
+    playOutline,
+    stopOutline,
+    infiniteOutline,
+    shuffleOutline,
+    arrowUpOutline,
+    arrowDownOutline,
+    swapVerticalOutline,
+    handRightOutline,
+    chevronUpOutline,
+    chevronDownOutline,
+    addOutline,
+    removeOutline,
+  } from 'ionicons/icons'
 
   import ClusterDisplay from '../components/cluster/ClusterDisplay.vue'
   import StrategyCard from '../components/strategy/StrategyCard.vue'
   import SequenceHistory from '../components/sequence/SequenceHistory.vue'
-  import PlaybackControls from '../components/playback/PlaybackControls.vue'
 
   import { useSequenceStore } from '../stores/sequenceStore'
   import { useSettingsStore } from '../stores/settingsStore'
@@ -281,14 +319,17 @@
   const savedFlash = ref(false)
   const copiedFlash = ref(false)
   const multiSelect = ref(false)
+  const footerExpanded = ref(false)
   const voiceColors = VOICE_COLORS
 
+  const loopActive = ref(false)
+
   const directionOptions = [
-    { label: '↑', value: 'up' },
-    { label: '↓', value: 'down' },
-    { label: '↑↓', value: 'updown' },
-    { label: '↺', value: 'random' },
-    { label: '≡', value: 'chord' },
+    { value: 'up', icon: arrowUpOutline },
+    { value: 'down', icon: arrowDownOutline },
+    { value: 'updown', icon: swapVerticalOutline },
+    { value: 'random', icon: shuffleOutline },
+    { value: 'chord', icon: handRightOutline },
   ]
 
   watch(
@@ -439,6 +480,19 @@
     router.push('/')
   }
 
+  function toggleLoop() {
+    loopActive.value = !loopActive.value
+    if (isPlaying.value) handlePlay()
+  }
+
+  function handlePlay() {
+    if (loopActive.value) {
+      playLoop()
+    } else {
+      playOnce()
+    }
+  }
+
   function playLoop() {
     audioEngine.playSequence(
       sequenceStore.sequence,
@@ -465,12 +519,6 @@
     sequenceStore.setLoopResolved(false)
   }
 
-  function transposeOctave(direction: 1 | -1) {
-    audioEngine.stopLoop()
-    sequenceStore.transposeOctave(direction)
-    advance()
-  }
-
   function editCluster(index: number, newCluster: Cluster) {
     sequenceStore.editClusterAt(index, newCluster)
     if (index === sequenceStore.sequence.length - 1) {
@@ -487,7 +535,11 @@
   }
 
   function save() {
-    saveSession(sequenceStore.sequence, settingsStore.voiceCount, settingsStore.instrument)
+    saveSession(
+      sequenceStore.sequence,
+      settingsStore.voiceCount,
+      settingsStore.instrument
+    )
     savedFlash.value = true
     setTimeout(() => {
       savedFlash.value = false
@@ -681,20 +733,106 @@
     opacity: 0.85;
   }
 
-  /* Playback row */
-  .playback-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
+  /* Footer */
+  .playback-footer {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
   }
 
-  .playback-settings {
+  .footer-bar {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .footer-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text-dim);
+    width: 2.8rem;
+    height: 2.4rem;
+    font-size: 1.25rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background 0.15s;
+  }
+  .footer-icon-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .footer-icon-btn.play-stop:not(:disabled):hover,
+  .footer-icon-btn.play-stop.playing {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .footer-icon-btn.loop-toggle.active {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: rgba(224, 168, 124, 0.1);
+  }
+  .footer-icon-btn.loop-toggle:not(.active):hover {
+    border-color: var(--color-text-dim);
+    color: var(--color-text);
+  }
+
+  .footer-expand-btn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--color-text-dim);
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 2rem;
+    height: 2.4rem;
+    transition: color 0.15s;
+  }
+  .footer-expand-btn:hover,
+  .footer-expand-btn.open {
+    color: var(--color-text);
+  }
+
+  .footer-tray {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.22s ease;
+    overflow: hidden;
+  }
+  .footer-tray.open {
+    grid-template-rows: 1fr;
+  }
+
+  .tray-inner {
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem 0.7rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .tray-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+  }
+
+  .export-btns {
+    display: flex;
+    gap: 0.4rem;
+    margin-left: auto;
   }
 
   .instrument-select {
@@ -703,15 +841,18 @@
     border-radius: 6px;
     color: var(--color-text-dim);
     font-size: 0.7rem;
-    padding: 0.25rem 0.4rem;
     font-family: inherit;
     cursor: pointer;
+    flex: 1;
+    min-height: 2.4rem;
+    padding: 0 1rem;
   }
 
   .tempo-control {
     display: flex;
     align-items: center;
     gap: 0.3rem;
+    margin-left: auto;
   }
 
   .adj-btn {
@@ -719,14 +860,13 @@
     border: 1px solid var(--color-border);
     border-radius: 6px;
     color: var(--color-text-dim);
-    width: 1.6rem;
-    height: 1.6rem;
-    font-size: 0.9rem;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
     transition:
       border-color 0.15s,
       color 0.15s;
@@ -756,15 +896,21 @@
   }
 
   .toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: 1px solid var(--color-border);
     border-radius: 6px;
     color: var(--color-text-dim);
-    font-size: 0.75rem;
-    padding: 0.25rem 0.55rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background 0.15s;
   }
   .candidates-header {
     display: flex;
@@ -793,11 +939,6 @@
     border-color: var(--color-accent);
     color: var(--color-bg);
     background: var(--color-accent);
-  }
-
-  .export-row {
-    display: flex;
-    gap: 0.5rem;
   }
 
   .export-btn {
