@@ -1,6 +1,5 @@
 <template>
   <div class="sequence-history">
-    <p class="history-label">the flow</p>
     <div class="history-scroll">
       <IonReorderGroup :disabled="false" @ionItemReorder="onReorder($event)">
         <div
@@ -156,8 +155,6 @@ function confirmDelete(index: number) {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: 240px;
-  overflow-y: auto;
   overflow-x: hidden;
 }
 

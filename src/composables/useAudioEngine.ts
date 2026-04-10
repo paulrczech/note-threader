@@ -281,6 +281,13 @@ function playSequence(
   currentSequenceLength = sequence.length
   playingIndex.value = 0
 
+  // When not looping, stop cleanly after one pass
+  if (!loop) {
+    transport.scheduleOnce(() => {
+      stopLoop()
+    }, totalDuration)
+  }
+
   function tick() {
     const pos = Tone.getTransport().seconds
     const idx = Math.floor(pos / currentClusterDuration) % currentSequenceLength

@@ -3,7 +3,9 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <button class="nav-btn" @click="goHome">← new</button>
+          <button class="back-to-home nav-btn" @click="goHome">
+            <ion-icon :icon="arrowBack" /> new
+          </button>
         </ion-buttons>
         <ion-title class="session-title">eddy</ion-title>
         <ion-buttons slot="end">
@@ -13,55 +15,26 @@
             :disabled="sequenceStore.sequence.length < 1"
             @click="save"
             title="save session">
-            <svg
-              v-if="!savedFlash"
-              width="15"
-              height="15"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg">
-              <rect
-                x="1"
-                y="1"
-                width="14"
-                height="14"
-                rx="1.5"
-                stroke="currentColor"
-                stroke-width="1.2" />
-              <rect
-                x="4"
-                y="1"
-                width="6"
-                height="5"
-                rx="0.5"
-                stroke="currentColor"
-                stroke-width="1.2" />
-              <rect
-                x="3"
-                y="8"
-                width="10"
-                height="6"
-                rx="0.5"
-                stroke="currentColor"
-                stroke-width="1.2" />
-            </svg>
-            <span v-else style="font-size: 0.7rem; letter-spacing: 0.08em"
+            <span
+              v-if="savedFlash"
+              style="font-size: 0.7rem; letter-spacing: 0.08em"
               >saved</span
             >
+            <ion-icon v-else :icon="saveIcon" />
           </button>
           <button
             class="nav-btn icon-btn"
             :disabled="!sequenceStore.canUndo"
             @click="goUndo"
             title="undo">
-            ↩
+            <ion-icon :icon="arrowUndoIcon" />
           </button>
           <button
             class="nav-btn icon-btn"
             :disabled="!sequenceStore.canRedo"
             @click="goRedo"
             title="redo">
-            ↪
+            <ion-icon :icon="arrowRedoIcon" />
           </button>
         </ion-buttons>
       </ion-toolbar>
@@ -94,14 +67,8 @@
           class="candidates-block">
           <div class="candidates-header">
             <p class="section-label">streams — tap to hear</p>
-            <button
-              class="multi-toggle"
-              :class="{ active: multiSelect }"
-              @click="toggleMultiSelect">
-              multi
-            </button>
           </div>
-          <div class="candidates-grid" :class="{ 'multi-active': multiSelect }">
+          <div class="candidates-grid">
             <button
               v-for="(cluster, i) in candidates"
               :key="clusterKey(cluster)"
@@ -149,107 +116,133 @@
           </button>
         </div>
 
-        <!-- Sequence history -->
-        <SequenceHistory
-          v-if="sequenceStore.sequence.length > 0"
-          :sequence="sequenceStore.sequence"
-          :loop-point="sequenceStore.loopPoint"
-          :playing-index="isPlaying ? playingIndex : -1"
-          @audition="auditionHistoryCluster"
-          @delete="deleteCluster"
-          @edit="editCluster"
-          @reorder="reorderClusters" />
       </div>
     </ion-content>
 
-    <ion-footer class="playback-footer">
-      <div class="footer-bar">
-        <button
-          class="footer-icon-btn play-stop"
-          :class="{ playing: isPlaying }"
-          :disabled="sequenceStore.sequence.length < 1"
-          @click="isPlaying ? audioEngine.stopLoop() : handlePlay()">
-          <ion-icon :icon="isPlaying ? stopOutline : playOutline" />
-        </button>
-        <button
-          class="footer-icon-btn loop-toggle"
-          :class="{ active: loopActive }"
-          @click="toggleLoop">
-          <ion-icon :icon="infiniteOutline" />
-        </button>
-        <ion-select
-          interface="action-sheet"
-          :value="settingsStore.instrument"
-          class="instrument-select"
-          @ionChange="
-            settingsStore.setInstrument(($event as CustomEvent).detail.value)
-          ">
-          <ion-select-option value="piano">piano</ion-select-option>
-          <ion-select-option value="harp">harp</ion-select-option>
-          <ion-select-option value="guitar-acoustic"
-            >guitar (ac)</ion-select-option
-          >
-          <ion-select-option value="guitar-nylon"
-            >guitar (ny)</ion-select-option
-          >
-          <ion-select-option value="cello">cello</ion-select-option>
-          <ion-select-option value="violin">violin</ion-select-option>
-        </ion-select>
-        <button
-          class="footer-expand-btn"
-          :class="{ open: footerExpanded }"
-          @click="footerExpanded = !footerExpanded">
-          <ion-icon
-            :icon="footerExpanded ? chevronDownOutline : chevronUpOutline" />
-        </button>
+    <!-- Bottom stack: flow drawer + playback footer, single fixed anchor -->
+    <div class="bottom-stack">
+      <!-- Flow drawer -->
+      <div
+        class="flow-drawer"
+        :class="{ expanded: flowExpanded }"
+        :style="drawerStyle"
+        @touchstart.passive="onDrawerTouchStart"
+        @touchmove.passive="onDrawerTouchMove"
+        @touchend.passive="onDrawerTouchEnd">
+        <div class="flow-drawer-handle" @click="flowExpanded = !flowExpanded">
+          <div class="handle-bar" />
+          <div class="handle-label">
+            <span class="section-label">the flow</span>
+            <span v-if="sequenceStore.sequence.length > 0" class="flow-count">
+              {{ sequenceStore.sequence.length }}
+            </span>
+          </div>
+        </div>
+        <div class="flow-drawer-body">
+          <SequenceHistory
+            v-if="sequenceStore.sequence.length > 0"
+            :sequence="sequenceStore.sequence"
+            :loop-point="sequenceStore.loopPoint"
+            :playing-index="isPlaying ? playingIndex : -1"
+            @audition="auditionHistoryCluster"
+            @delete="deleteCluster"
+            @edit="editCluster"
+            @reorder="reorderClusters" />
+          <p v-else class="flow-empty">no moves yet</p>
+        </div>
       </div>
 
-      <div class="footer-tray" :class="{ open: footerExpanded }">
-        <div class="tray-inner">
-          <div class="tray-row">
-            <div class="toggle-row">
-              <button
-                v-for="d in directionOptions"
-                :key="d.value"
-                class="toggle-btn"
-                :class="{ active: settingsStore.arpeggioDirection === d.value }"
-                @click="settingsStore.setArpeggioDirection(d.value as any)">
-                <ion-icon :icon="d.icon" />
+      <!-- Playback footer -->
+      <div class="playback-footer">
+        <div class="footer-bar">
+          <button
+            class="footer-icon-btn play-stop"
+            :class="{ playing: isPlaying }"
+            :disabled="sequenceStore.sequence.length < 1"
+            @click="isPlaying ? audioEngine.stopLoop() : handlePlay()">
+            <ion-icon :icon="isPlaying ? stopOutline : playOutline" />
+          </button>
+          <button
+            class="footer-icon-btn loop-toggle"
+            :class="{ active: loopActive }"
+            @click="toggleLoop">
+            <ion-icon :icon="infiniteOutline" />
+          </button>
+          <ion-select
+            interface="action-sheet"
+            :value="settingsStore.instrument"
+            class="instrument-select"
+            @ionChange="
+              settingsStore.setInstrument(($event as CustomEvent).detail.value)
+            ">
+            <ion-select-option value="piano">piano</ion-select-option>
+            <ion-select-option value="harp">harp</ion-select-option>
+            <ion-select-option value="guitar-acoustic">guitar (ac)</ion-select-option>
+            <ion-select-option value="guitar-nylon">guitar (ny)</ion-select-option>
+            <ion-select-option value="cello">cello</ion-select-option>
+            <ion-select-option value="violin">violin</ion-select-option>
+          </ion-select>
+          <button
+            class="footer-icon-btn flow-btn"
+            :class="{ active: flowExpanded }"
+            @click="flowExpanded = !flowExpanded">
+            <ion-icon :icon="layersOutline" />
+          </button>
+          <button
+            class="footer-expand-btn"
+            :class="{ open: footerExpanded }"
+            @click="footerExpanded = !footerExpanded">
+            <ion-icon
+              :icon="footerExpanded ? chevronDownOutline : chevronUpOutline" />
+          </button>
+        </div>
+
+        <div class="footer-tray" :class="{ open: footerExpanded }">
+          <div class="tray-inner">
+            <div class="tray-row">
+              <div class="toggle-row">
+                <button
+                  v-for="d in directionOptions"
+                  :key="d.value"
+                  class="toggle-btn"
+                  :class="{ active: settingsStore.arpeggioDirection === d.value }"
+                  @click="settingsStore.setArpeggioDirection(d.value as any)">
+                  <ion-icon :icon="d.icon" />
+                </button>
+              </div>
+              <div class="tempo-control">
+                <button class="adj-btn" @click="adjustTempo(-5)">
+                  <ion-icon :icon="removeOutline" />
+                </button>
+                <span class="tempo-value">{{ settingsStore.tempo }}</span>
+                <button class="adj-btn" @click="adjustTempo(5)">
+                  <ion-icon :icon="addOutline" />
+                </button>
+                <span class="tempo-unit">bpm</span>
+              </div>
+            </div>
+            <div
+              v-if="sequenceStore.sequence.length > 1"
+              class="tray-row export-row">
+              <button class="export-btn" @click="exportMidi">↓ midi</button>
+              <button class="export-btn" @click="copyText">
+                {{ copiedFlash ? 'copied!' : 'copy text' }}
               </button>
             </div>
-            <div class="tempo-control">
-              <button class="adj-btn" @click="adjustTempo(-5)">
-                <ion-icon :icon="removeOutline" />
-              </button>
-              <span class="tempo-value">{{ settingsStore.tempo }}</span>
-              <button class="adj-btn" @click="adjustTempo(5)">
-                <ion-icon :icon="addOutline" />
-              </button>
-              <span class="tempo-unit">bpm</span>
-            </div>
-          </div>
-          <div
-            v-if="sequenceStore.sequence.length > 1"
-            class="tray-row export-row">
-            <button class="export-btn" @click="exportMidi">↓ midi</button>
-            <button class="export-btn" @click="copyText">
-              {{ copiedFlash ? 'copied!' : 'copy text' }}
-            </button>
           </div>
         </div>
       </div>
-    </ion-footer>
+    </div>
   </ion-page>
 </template>
 
 <script setup lang="ts">
   import { ref, computed, watch, onUnmounted } from 'vue'
-  import { onIonViewWillEnter } from '@ionic/vue'
+  import { onIonViewWillEnter, onIonViewWillLeave } from '@ionic/vue'
   import { useRouter } from 'vue-router'
   import {
     IonPage,
     IonHeader,
-    IonFooter,
     IonToolbar,
     IonTitle,
     IonContent,
@@ -259,11 +252,15 @@
     IonIcon,
   } from '@ionic/vue'
   import {
+    save as saveIcon,
+    arrowUndo as arrowUndoIcon,
+    arrowRedo as arrowRedoIcon,
     playOutline,
     stopOutline,
     infiniteOutline,
     shuffleOutline,
     arrowUpOutline,
+    arrowBack,
     arrowDownOutline,
     swapVerticalOutline,
     handRightOutline,
@@ -271,6 +268,7 @@
     chevronDownOutline,
     addOutline,
     removeOutline,
+    layersOutline,
   } from 'ionicons/icons'
 
   import ClusterDisplay from '../components/cluster/ClusterDisplay.vue'
@@ -312,13 +310,52 @@
   )
   const { findLoopPoint } = useLoopDetection()
 
+  // Flow drawer
+  const PEEK_HEIGHT = 100  // px — handle + label + ~1 row visible
+  const FULL_HEIGHT = 0.72 // fraction of viewport height
+  const flowExpanded = ref(false)
+  const drawerDragOffset = ref(0)
+  const isDragging = ref(false)
+  let dragStartY = 0
+
+  const drawerStyle = computed(() => {
+    const expandedH = Math.round(window.innerHeight * FULL_HEIGHT)
+    if (isDragging.value) {
+      const base = flowExpanded.value ? expandedH : PEEK_HEIGHT
+      const h = Math.max(PEEK_HEIGHT, base - drawerDragOffset.value)
+      return { height: `${h}px`, transition: 'none' }
+    }
+    return {
+      height: flowExpanded.value ? `${expandedH}px` : `${PEEK_HEIGHT}px`,
+      transition: 'height 0.28s cubic-bezier(0.4,0,0.2,1)',
+    }
+  })
+
+  function onDrawerTouchStart(e: TouchEvent) {
+    dragStartY = e.touches[0].clientY
+    drawerDragOffset.value = 0
+    isDragging.value = true
+  }
+
+  function onDrawerTouchMove(e: TouchEvent) {
+    drawerDragOffset.value = e.touches[0].clientY - dragStartY
+  }
+
+  function onDrawerTouchEnd() {
+    const delta = drawerDragOffset.value
+    isDragging.value = false
+    drawerDragOffset.value = 0
+    // threshold: 60px drag to toggle
+    if (flowExpanded.value && delta > 60) flowExpanded.value = false
+    else if (!flowExpanded.value && delta < -60) flowExpanded.value = true
+  }
+
   const candidates = ref<Cluster[]>([])
   const activeStrategy = ref<Strategy | null>(null)
   const selectedIndices = ref<number[]>([]) // ordered by tap — drives add sequence
   const auditioning = ref<Cluster | null>(null)
   const savedFlash = ref(false)
   const copiedFlash = ref(false)
-  const multiSelect = ref(false)
   const footerExpanded = ref(false)
   const voiceColors = VOICE_COLORS
 
@@ -369,6 +406,10 @@
     advance()
   })
 
+  onIonViewWillLeave(() => {
+    flowExpanded.value = false
+  })
+
   onUnmounted(() => {
     audioEngine.stopLoop()
   })
@@ -408,29 +449,16 @@
     return pos === -1 ? 0 : pos + 1
   }
 
-  function toggleMultiSelect() {
-    multiSelect.value = !multiSelect.value
-    selectedIndices.value = []
-    auditioning.value = null
-  }
-
   function selectCandidate(cluster: Cluster, index: number) {
-    // Always audition on tap
     auditioning.value = cluster
     sequenceStore.audition(cluster)
     audioEngine.playCluster(cluster, playbackSettings.value)
 
-    if (multiSelect.value) {
-      // Toggle in ordered list
-      const pos = selectedIndices.value.indexOf(index)
-      if (pos === -1) {
-        selectedIndices.value.push(index)
-      } else {
-        selectedIndices.value.splice(pos, 1)
-      }
+    const pos = selectedIndices.value.indexOf(index)
+    if (pos === -1) {
+      selectedIndices.value.push(index)
     } else {
-      // Single select — replace any previous selection
-      selectedIndices.value = [index]
+      selectedIndices.value.splice(pos, 1)
     }
   }
 
@@ -584,7 +612,7 @@
 
   .session-title {
     font-family: var(--font-serif);
-    font-size: 1rem;
+    font-size: 1.25rem;
     font-weight: 300;
     letter-spacing: 0.12em;
     text-align: center;
@@ -601,6 +629,12 @@
     padding: 0 0.4rem;
     font-family: inherit;
     transition: color 0.15s;
+    &.back-to-home {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-weight: 500;
+    }
   }
   .nav-btn:hover:not(:disabled) {
     color: var(--color-text);
@@ -613,8 +647,10 @@
     color: var(--color-accent);
   }
   .icon-btn {
-    font-size: 0.95rem;
+    font-size: 1.15rem;
     padding: 0 0.3rem;
+    display: inline-flex;
+    align-items: center;
   }
 
   .current-cluster-block {
@@ -734,9 +770,21 @@
   }
 
   /* Footer */
+  /* Bottom stack */
+  .bottom-stack {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
   .playback-footer {
     border-top: 1px solid var(--color-border);
     background: var(--color-bg);
+    flex-shrink: 0;
   }
 
   .footer-bar {
@@ -807,9 +855,17 @@
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.22s ease;
     overflow: hidden;
+    border-top: 1px solid transparent;
+    transition:
+      grid-template-rows 0.22s ease,
+      border-color 0.22s ease;
   }
   .footer-tray.open {
     grid-template-rows: 1fr;
+    border-color: var(--color-border);
+    .tray-inner {
+      padding: 1rem;
+    }
   }
 
   .tray-inner {
@@ -818,8 +874,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    padding: 0.4rem 1rem 0.7rem;
-    border-top: 1px solid var(--color-border);
+    padding: 0 1rem;
   }
 
   .tray-row {
@@ -827,6 +882,9 @@
     align-items: center;
     gap: 0.5rem;
     flex-wrap: nowrap;
+    &.export-row {
+      padding-top: 0.5rem;
+    }
   }
 
   .export-btns {
@@ -846,6 +904,10 @@
     flex: 1;
     min-height: 2.4rem;
     padding: 0 1rem;
+    &::part(inner) {
+      width: 100%;
+      justify-content: space-between;
+    }
   }
 
   .tempo-control {
@@ -923,24 +985,6 @@
     margin-bottom: 0;
   }
 
-  .multi-toggle {
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    color: var(--color-text-dim);
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
-    padding: 0.2rem 0.55rem;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-  }
-  .multi-toggle.active {
-    border-color: var(--color-accent);
-    color: var(--color-bg);
-    background: var(--color-accent);
-  }
-
   .export-btn {
     background: none;
     border: 1px solid var(--color-border);
@@ -965,4 +1009,65 @@
     color: var(--color-text);
     background: var(--color-accent);
   }
+
+  /* Flow drawer */
+  .flow-drawer {
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    touch-action: none;
+    flex-shrink: 0;
+  }
+
+  .flow-drawer-handle {
+    flex-shrink: 0;
+    padding: 0.5rem 1rem 0.4rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .handle-bar {
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--color-border);
+    margin: 0 auto 0.5rem;
+  }
+
+  .handle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .handle-label .section-label {
+    margin: 0;
+  }
+
+  .flow-count {
+    font-size: 0.65rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--color-text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .flow-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 1rem 1.5rem;
+  }
+
+  .flow-empty {
+    font-size: 0.8rem;
+    color: var(--color-text-dim);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem 0;
+  }
 </style>
+
