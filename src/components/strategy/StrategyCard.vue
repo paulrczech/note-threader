@@ -36,13 +36,6 @@
 </script>
 
 <style scoped>
-  .section-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-text-dim);
-    margin: 0 0 0.6rem;
-  }
 
   .strategy-card {
     background: linear-gradient(

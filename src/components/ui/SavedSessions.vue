@@ -170,7 +170,7 @@
   .session-meta {
     font-size: 0.72rem;
     color: var(--color-text-dim);
-    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-family: var(--font-mono);
     flex-shrink: 0;
     transition: color 0.15s;
   }

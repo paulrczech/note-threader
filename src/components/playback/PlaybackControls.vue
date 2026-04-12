@@ -119,7 +119,7 @@ defineEmits<{
   letter-spacing: 0.06em;
   padding: 0.45rem 0.55rem;
   color: var(--color-text-dim);
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
 }
 .ctrl-btn.octave:not(:disabled):hover {
   border-color: var(--color-text-dim);

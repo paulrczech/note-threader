@@ -107,40 +107,18 @@
         <div
           v-if="selectedIndices.length > 0 && !sequenceStore.loopResolved"
           class="confirm-block">
-          <button class="confirm-btn" @click="confirmSelection">
+          <button class="btn-primary" @click="confirmSelection">
             {{
               selectedIndices.length === 1
-                ? 'keep this'
-                : 'keep these ' + selectedIndices.length
+                ? 'let it run'
+                : 'let these ' + selectedIndices.length + ' run'
             }}
           </button>
         </div>
 
-      </div>
-    </ion-content>
-
-    <!-- Bottom stack: flow drawer + playback footer, single fixed anchor -->
-    <div class="bottom-stack">
-      <!-- Flow drawer -->
-      <div
-        class="flow-drawer"
-        :class="{ expanded: flowExpanded }"
-        :style="drawerStyle"
-        @touchstart.passive="onDrawerTouchStart"
-        @touchmove.passive="onDrawerTouchMove"
-        @touchend.passive="onDrawerTouchEnd">
-        <div class="flow-drawer-handle" @click="flowExpanded = !flowExpanded">
-          <div class="handle-bar" />
-          <div class="handle-label">
-            <span class="section-label">the flow</span>
-            <span v-if="sequenceStore.sequence.length > 0" class="flow-count">
-              {{ sequenceStore.sequence.length }}
-            </span>
-          </div>
-        </div>
-        <div class="flow-drawer-body">
+        <!-- Sequence history — fills remaining space -->
+        <div v-if="sequenceStore.sequence.length > 0" class="flow-section">
           <SequenceHistory
-            v-if="sequenceStore.sequence.length > 0"
             :sequence="sequenceStore.sequence"
             :loop-point="sequenceStore.loopPoint"
             :playing-index="isPlaying ? playingIndex : -1"
@@ -148,12 +126,12 @@
             @delete="deleteCluster"
             @edit="editCluster"
             @reorder="reorderClusters" />
-          <p v-else class="flow-empty">no moves yet</p>
         </div>
-      </div>
 
-      <!-- Playback footer -->
-      <div class="playback-footer">
+      </div>
+    </ion-content>
+
+    <ion-footer class="playback-footer">
         <div class="footer-bar">
           <button
             class="footer-icon-btn play-stop"
@@ -182,12 +160,6 @@
             <ion-select-option value="cello">cello</ion-select-option>
             <ion-select-option value="violin">violin</ion-select-option>
           </ion-select>
-          <button
-            class="footer-icon-btn flow-btn"
-            :class="{ active: flowExpanded }"
-            @click="flowExpanded = !flowExpanded">
-            <ion-icon :icon="layersOutline" />
-          </button>
           <button
             class="footer-expand-btn"
             :class="{ open: footerExpanded }"
@@ -231,18 +203,18 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </ion-footer>
   </ion-page>
 </template>
 
 <script setup lang="ts">
   import { ref, computed, watch, onUnmounted } from 'vue'
-  import { onIonViewWillEnter, onIonViewWillLeave } from '@ionic/vue'
+  import { onIonViewWillEnter } from '@ionic/vue'
   import { useRouter } from 'vue-router'
   import {
     IonPage,
     IonHeader,
+    IonFooter,
     IonToolbar,
     IonTitle,
     IonContent,
@@ -268,7 +240,6 @@
     chevronDownOutline,
     addOutline,
     removeOutline,
-    layersOutline,
   } from 'ionicons/icons'
 
   import ClusterDisplay from '../components/cluster/ClusterDisplay.vue'
@@ -309,46 +280,6 @@
     () => settingsStore.keyLockActive
   )
   const { findLoopPoint } = useLoopDetection()
-
-  // Flow drawer
-  const PEEK_HEIGHT = 100  // px — handle + label + ~1 row visible
-  const FULL_HEIGHT = 0.72 // fraction of viewport height
-  const flowExpanded = ref(false)
-  const drawerDragOffset = ref(0)
-  const isDragging = ref(false)
-  let dragStartY = 0
-
-  const drawerStyle = computed(() => {
-    const expandedH = Math.round(window.innerHeight * FULL_HEIGHT)
-    if (isDragging.value) {
-      const base = flowExpanded.value ? expandedH : PEEK_HEIGHT
-      const h = Math.max(PEEK_HEIGHT, base - drawerDragOffset.value)
-      return { height: `${h}px`, transition: 'none' }
-    }
-    return {
-      height: flowExpanded.value ? `${expandedH}px` : `${PEEK_HEIGHT}px`,
-      transition: 'height 0.28s cubic-bezier(0.4,0,0.2,1)',
-    }
-  })
-
-  function onDrawerTouchStart(e: TouchEvent) {
-    dragStartY = e.touches[0].clientY
-    drawerDragOffset.value = 0
-    isDragging.value = true
-  }
-
-  function onDrawerTouchMove(e: TouchEvent) {
-    drawerDragOffset.value = e.touches[0].clientY - dragStartY
-  }
-
-  function onDrawerTouchEnd() {
-    const delta = drawerDragOffset.value
-    isDragging.value = false
-    drawerDragOffset.value = 0
-    // threshold: 60px drag to toggle
-    if (flowExpanded.value && delta > 60) flowExpanded.value = false
-    else if (!flowExpanded.value && delta < -60) flowExpanded.value = true
-  }
 
   const candidates = ref<Cluster[]>([])
   const activeStrategy = ref<Strategy | null>(null)
@@ -404,10 +335,6 @@
       return
     }
     advance()
-  })
-
-  onIonViewWillLeave(() => {
-    flowExpanded.value = false
   })
 
   onUnmounted(() => {
@@ -657,13 +584,6 @@
     padding-top: 0.5rem;
   }
 
-  .section-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-text-dim);
-    margin: 0 0 0.6rem;
-  }
 
   .loop-banner {
     background: rgba(83, 105, 72, 0.3);
@@ -681,7 +601,7 @@
   .candidates-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.75rem;
   }
 
   .candidate-pill {
@@ -691,6 +611,7 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border-subtle);
     border-radius: 10px;
+    min-height: 2.75rem;
     padding: 0.65rem 1rem;
     cursor: pointer;
     transition:
@@ -725,7 +646,7 @@
 
   .pill-note {
     font-size: 0.95rem;
-    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-family: var(--font-mono);
     letter-spacing: 0.04em;
   }
   .pill-note + .pill-note::before {
@@ -750,41 +671,10 @@
     text-decoration: underline;
   }
 
-  .confirm-btn {
-    width: 100%;
-    background: var(--color-accent);
-    border: 1px solid var(--color-accent);
-    border-radius: 10px;
-    color: var(--color-bg);
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-    padding: 0.75rem;
-    cursor: pointer;
-    font-family: inherit;
-    transition:
-      background 0.15s,
-      opacity 0.15s;
-  }
-  .confirm-btn:hover {
-    opacity: 0.85;
-  }
-
   /* Footer */
-  /* Bottom stack */
-  .bottom-stack {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-  }
-
   .playback-footer {
     border-top: 1px solid var(--color-border);
     background: var(--color-bg);
-    flex-shrink: 0;
   }
 
   .footer-bar {
@@ -802,8 +692,8 @@
     border: 1px solid var(--color-border);
     border-radius: 8px;
     color: var(--color-text-dim);
-    width: 2.8rem;
-    height: 2.4rem;
+    width: 2.75rem;
+    height: 2.75rem;
     font-size: 1.25rem;
     cursor: pointer;
     flex-shrink: 0;
@@ -841,8 +731,8 @@
     color: var(--color-text-dim);
     font-size: 1.1rem;
     cursor: pointer;
-    width: 2rem;
-    height: 2.4rem;
+    width: 2.75rem;
+    height: 2.75rem;
     transition: color 0.15s;
   }
   .footer-expand-btn:hover,
@@ -887,12 +777,6 @@
     }
   }
 
-  .export-btns {
-    display: flex;
-    gap: 0.4rem;
-    margin-left: auto;
-  }
-
   .instrument-select {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -902,7 +786,7 @@
     font-family: inherit;
     cursor: pointer;
     flex: 1;
-    min-height: 2.4rem;
+    min-height: 2.75rem;
     padding: 0 1rem;
     &::part(inner) {
       width: 100%;
@@ -922,8 +806,8 @@
     border: 1px solid var(--color-border);
     border-radius: 6px;
     color: var(--color-text-dim);
-    width: 2rem;
-    height: 2rem;
+    width: 2.25rem;
+    height: 2.25rem;
     font-size: 1rem;
     cursor: pointer;
     display: flex;
@@ -940,7 +824,7 @@
 
   .tempo-value {
     font-size: 0.8rem;
-    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-family: var(--font-mono);
     color: var(--color-text);
     min-width: 2.2rem;
     text-align: center;
@@ -965,8 +849,8 @@
     border: 1px solid var(--color-border);
     border-radius: 6px;
     color: var(--color-text-dim);
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.25rem;
+    height: 2.25rem;
     font-size: 1.1rem;
     cursor: pointer;
     transition:
@@ -992,6 +876,7 @@
     color: var(--color-text-dim);
     font-size: 0.72rem;
     letter-spacing: 0.1em;
+    min-height: 2.25rem;
     padding: 0.4rem 0.85rem;
     cursor: pointer;
     font-family: inherit;
@@ -1010,64 +895,5 @@
     background: var(--color-accent);
   }
 
-  /* Flow drawer */
-  .flow-drawer {
-    background: var(--color-bg);
-    border-top: 1px solid var(--color-border);
-    border-radius: 14px 14px 0 0;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    touch-action: none;
-    flex-shrink: 0;
-  }
-
-  .flow-drawer-handle {
-    flex-shrink: 0;
-    padding: 0.5rem 1rem 0.4rem;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .handle-bar {
-    width: 36px;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--color-border);
-    margin: 0 auto 0.5rem;
-  }
-
-  .handle-label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .handle-label .section-label {
-    margin: 0;
-  }
-
-  .flow-count {
-    font-size: 0.65rem;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--color-text-dim);
-    letter-spacing: 0.1em;
-  }
-
-  .flow-drawer-body {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 0 1rem 1.5rem;
-  }
-
-  .flow-empty {
-    font-size: 0.8rem;
-    color: var(--color-text-dim);
-    font-style: italic;
-    text-align: center;
-    padding: 2rem 0;
-  }
 </style>
 

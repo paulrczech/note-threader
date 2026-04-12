@@ -1,5 +1,6 @@
 <template>
   <div class="sequence-history">
+    <p class="section-label">the flow</p>
     <div class="history-scroll">
       <IonReorderGroup :disabled="false" @ionItemReorder="onReorder($event)">
         <div
@@ -7,69 +8,95 @@
           :key="i"
           class="history-row"
         >
-          <!-- Edit mode -->
-          <template v-if="editingIndex === i">
-            <div class="history-entry editing">
-              <span class="entry-index">{{ i + 1 }}</span>
-              <div class="edit-voices">
-                <select
-                  v-for="(_, v) in editValues"
-                  :key="v"
-                  v-model.number="editValues[v]"
-                  class="note-select"
-                  :style="{ color: voiceColors[v] }"
-                >
-                  <option v-for="midi in validMidiRange" :key="midi" :value="midi">
-                    {{ midiToName(midi) }}
-                  </option>
-                </select>
-              </div>
-              <div class="edit-actions">
-                <button class="edit-confirm-btn" @click="commitEdit(i)" title="save">✓</button>
-                <button class="edit-cancel-btn" @click="cancelEdit" title="cancel">✕</button>
-              </div>
+          <div
+            class="history-entry"
+            :class="{
+              current: i === activeIndex,
+              'loop-origin': i === loopPoint,
+              playing: i === playingIndex,
+            }"
+            @click="onEntryClick(cluster, i)"
+          >
+            <IonReorder class="reorder-handle" :style="{ opacity: sequence.length < 2 ? 0 : 0.4 }" />
+            <span class="entry-index">{{ i + 1 }}</span>
+            <span
+              v-for="(midi, v) in sortCluster(cluster)"
+              :key="v"
+              class="entry-note"
+              :style="{ color: voiceColors[v] }"
+            >{{ midiToName(midi) }}</span>
+            <div class="row-actions">
+              <button class="action-btn" @click.stop="startEdit(cluster, i)" title="edit notes">
+                <IonIcon :icon="createOutline" />
+              </button>
+              <button class="action-btn delete-btn" @click.stop="confirmDelete(i)" title="delete">
+                <IonIcon :icon="trashOutline" />
+              </button>
             </div>
-            <p v-if="editError" class="edit-error">{{ editError }}</p>
-          </template>
-
-          <!-- Normal mode -->
-          <template v-else>
-            <div
-              class="history-entry"
-              :class="{
-                current: i === activeIndex,
-                'loop-origin': i === loopPoint,
-                playing: i === playingIndex,
-              }"
-              @click="onEntryClick(cluster, i)"
-            >
-              <IonReorder class="reorder-handle" :style="{ opacity: sequence.length < 2 ? 0 : 0.4 }" />
-              <span class="entry-index">{{ i + 1 }}</span>
-              <span
-                v-for="(midi, v) in sortCluster(cluster)"
-                :key="v"
-                class="entry-note"
-                :style="{ color: voiceColors[v] }"
-              >{{ midiToName(midi) }}</span>
-              <div class="row-actions">
-                <button class="action-btn" @click.stop="startEdit(cluster, i)" title="edit notes">
-                  <IonIcon :icon="createOutline" />
-                </button>
-                <button class="action-btn delete-btn" @click.stop="confirmDelete(i)" title="delete">
-                  <IonIcon :icon="trashOutline" />
-                </button>
-              </div>
-            </div>
-          </template>
+          </div>
         </div>
       </IonReorderGroup>
     </div>
   </div>
+
+  <!-- Edit picker modal -->
+  <IonModal
+    :is-open="pickerOpen"
+    style="
+      --height: 284px;
+      --width: 100vw;
+      --border-radius: 12px 12px 0 0;
+      align-items: flex-end;
+      overflow: hidden;
+    "
+    @did-dismiss="cancelEdit">
+    <IonHeader>
+      <IonToolbar>
+        <IonButtons slot="start">
+          <IonButton @click="cancelEdit">cancel</IonButton>
+        </IonButtons>
+        <IonButtons slot="end">
+          <IonButton @click="commitEdit">done</IonButton>
+        </IonButtons>
+      </IonToolbar>
+    </IonHeader>
+    <IonContent :scroll-y="false">
+      <p v-if="editError" class="edit-error">{{ editError }}</p>
+      <IonPicker>
+        <IonPickerColumn
+          v-for="(_, v) in editValues"
+          :key="v"
+          :value="editValues[v]"
+          @ion-change="onColumnChange(v, $event)">
+          <IonPickerColumnOption
+            v-for="midi in validMidiRange"
+            :key="midi"
+            :value="midi"
+            :style="{ color: voiceColors[v] }">
+            {{ midiToName(midi) }}
+          </IonPickerColumnOption>
+        </IonPickerColumn>
+      </IonPicker>
+    </IonContent>
+  </IonModal>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { IonReorderGroup, IonReorder, IonIcon } from '@ionic/vue'
+import {
+  IonReorderGroup,
+  IonReorder,
+  IonIcon,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonPicker,
+  IonPickerColumn,
+  IonPickerColumnOption,
+} from '@ionic/vue'
 import { trashOutline, createOutline } from 'ionicons/icons'
 import type { Cluster } from '../../utils/noteUtils'
 import { sortCluster, isValidCluster } from '../../utils/noteUtils'
@@ -93,11 +120,10 @@ const emit = defineEmits<{
 const voiceColors = VOICE_COLORS
 const validMidiRange = Array.from({ length: MIDI_MAX - MIDI_MIN + 1 }, (_, i) => MIDI_MIN + i)
 
-// Track which row is highlighted as active (defaults to last, follows clicks)
 const activeIndex = ref(props.sequence.length - 1)
 watch(() => props.sequence.length, (len) => { activeIndex.value = len - 1 })
 
-// Edit state
+const pickerOpen = ref(false)
 const editingIndex = ref<number | null>(null)
 const editValues = ref<number[]>([])
 const editError = ref('')
@@ -106,20 +132,27 @@ function startEdit(cluster: Cluster, index: number) {
   editingIndex.value = index
   editValues.value = [...sortCluster(cluster)]
   editError.value = ''
+  pickerOpen.value = true
 }
 
-function commitEdit(index: number) {
+function onColumnChange(voiceIndex: number, event: CustomEvent) {
+  editValues.value[voiceIndex] = event.detail.value
+  editError.value = ''
+}
+
+function commitEdit() {
   const newCluster = [...editValues.value] as Cluster
   if (!isValidCluster(newCluster)) {
-    editError.value = `invalid — check range and spread (max ${MAX_CLUSTER_SPREAD} semitones)`
+    editError.value = `spread too wide (max ${MAX_CLUSTER_SPREAD} semitones)`
     return
   }
+  pickerOpen.value = false
+  emit('edit', editingIndex.value!, newCluster)
   editingIndex.value = null
-  editError.value = ''
-  emit('edit', index, newCluster)
 }
 
 function cancelEdit() {
+  pickerOpen.value = false
   editingIndex.value = null
   editError.value = ''
 }
@@ -143,14 +176,6 @@ function confirmDelete(index: number) {
 <style scoped>
 .sequence-history { width: 100%; }
 
-.history-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
-  margin: 0 0 0.5rem;
-}
-
 .history-scroll {
   display: flex;
   flex-direction: column;
@@ -168,6 +193,7 @@ function confirmDelete(index: number) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 2.75rem;
   padding: 0.35rem 0.5rem;
   border-radius: 6px;
   cursor: pointer;
@@ -189,31 +215,6 @@ function confirmDelete(index: number) {
   background: rgba(126, 184, 212, 0.08);
   border-color: rgba(126, 184, 212, 0.35);
 }
-.history-entry.editing {
-  background: var(--color-surface);
-  border-color: var(--color-accent);
-  cursor: default;
-  gap: 0.4rem;
-}
-
-.delete-action {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 52px;
-  background: #8b3030;
-  border: none;
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.delete-action.visible { opacity: 1; }
 
 .entry-index {
   font-size: 0.65rem;
@@ -221,12 +222,12 @@ function confirmDelete(index: number) {
   width: 1.4rem;
   text-align: right;
   flex-shrink: 0;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
 }
 
 .entry-note {
   font-size: 0.8rem;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.04em;
 }
 .entry-note + .entry-note::before {
@@ -240,7 +241,6 @@ function confirmDelete(index: number) {
   color: var(--color-text-dim);
   opacity: 0.4;
 }
-
 
 .row-actions {
   margin-left: auto;
@@ -266,58 +266,11 @@ function confirmDelete(index: number) {
 .action-btn:hover { color: var(--color-accent); }
 .action-btn.delete-btn:hover { color: #e07878; }
 
-.edit-voices {
-  display: flex;
-  gap: 0.3rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.note-select {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  padding: 0.1rem 0.2rem;
-  cursor: pointer;
-  min-width: 0;
-  flex: 1;
-}
-
-.edit-actions {
-  display: flex;
-  gap: 0.25rem;
-  flex-shrink: 0;
-}
-
-.edit-confirm-btn,
-.edit-cancel-btn {
-  background: none;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 0.7rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: inherit;
-  transition: border-color 0.15s, color 0.15s;
-}
-.edit-confirm-btn {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-}
-.edit-confirm-btn:hover { background: rgba(83, 105, 72, 0.3); }
-.edit-cancel-btn { color: var(--color-text-dim); }
-.edit-cancel-btn:hover { border-color: var(--color-text-dim); color: var(--color-text); }
-
 .edit-error {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: #e07878;
-  margin: 0.1rem 0 0 2.4rem;
-  padding: 0 0.5rem;
+  text-align: center;
+  padding: 0.4rem 1rem 0;
+  margin: 0;
 }
 </style>

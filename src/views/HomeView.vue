@@ -593,26 +593,6 @@
     width: 100%;
   }
 
-  .start-btn,
-  .btn-primary {
-    width: 100%;
-    border-radius: 12px;
-    font-size: 1rem;
-    letter-spacing: 0.05em;
-    padding: 1rem;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-    background: var(--color-accent);
-    border: none;
-    color: #f2eee3;
-    font-weight: 500;
-  }
-  .start-btn:hover,
-  .btn-primary:hover {
-    opacity: 0.88;
-  }
-
   .error-msg {
     font-size: 0.75rem;
     color: #e07878;
@@ -621,27 +601,6 @@
   }
 
   /* Settings sheet — HomeView-specific */
-  .save-default-btn {
-    width: 100%;
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    color: var(--color-text-dim);
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    font-family: inherit;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
-    min-height: 48px;
-  }
-  .save-default-btn:hover {
-    border-color: var(--color-text-dim);
-    color: var(--color-text);
-  }
 </style>
 
 <!-- Global picker overrides — scoped styles can't reach shadow DOM -->
