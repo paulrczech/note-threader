@@ -67,8 +67,14 @@
           class="candidates-block">
           <div class="candidates-header">
             <p class="section-label">streams — tap to hear</p>
+            <button
+              class="multi-toggle"
+              :class="{ active: multiSelect }"
+              @click="toggleMultiSelect">
+              multi
+            </button>
           </div>
-          <div class="candidates-grid">
+          <div class="candidates-grid" :class="{ 'multi-active': multiSelect }">
             <button
               v-for="(cluster, i) in candidates"
               :key="clusterKey(cluster)"
@@ -110,8 +116,8 @@
           <button class="btn-primary" @click="confirmSelection">
             {{
               selectedIndices.length === 1
-                ? 'let it run'
-                : 'let these ' + selectedIndices.length + ' run'
+                ? 'add to the flow'
+                : 'add these ' + selectedIndices.length + ' to the flow'
             }}
           </button>
         </div>
@@ -123,6 +129,7 @@
             :loop-point="sequenceStore.loopPoint"
             :playing-index="isPlaying ? playingIndex : -1"
             @audition="auditionHistoryCluster"
+            @preview="auditionHistoryCluster"
             @delete="deleteCluster"
             @edit="editCluster"
             @reorder="reorderClusters" />
@@ -288,6 +295,7 @@
   const savedFlash = ref(false)
   const copiedFlash = ref(false)
   const footerExpanded = ref(false)
+  const multiSelect = ref(false)
   const voiceColors = VOICE_COLORS
 
   const loopActive = ref(false)
@@ -345,7 +353,7 @@
     selectedIndices.value = []
     auditioning.value = null
     activeStrategy.value = null
-    // Keep multiSelect mode across draws — user chose it intentionally
+    multiSelect.value = false
     if (!sequenceStore.currentCluster) return
 
     let attempts = 0
@@ -376,16 +384,26 @@
     return pos === -1 ? 0 : pos + 1
   }
 
+  function toggleMultiSelect() {
+    multiSelect.value = !multiSelect.value
+    selectedIndices.value = []
+    auditioning.value = null
+  }
+
   function selectCandidate(cluster: Cluster, index: number) {
     auditioning.value = cluster
     sequenceStore.audition(cluster)
     audioEngine.playCluster(cluster, playbackSettings.value)
 
-    const pos = selectedIndices.value.indexOf(index)
-    if (pos === -1) {
-      selectedIndices.value.push(index)
+    if (multiSelect.value) {
+      const pos = selectedIndices.value.indexOf(index)
+      if (pos === -1) {
+        selectedIndices.value.push(index)
+      } else {
+        selectedIndices.value.splice(pos, 1)
+      }
     } else {
-      selectedIndices.value.splice(pos, 1)
+      selectedIndices.value = [index]
     }
   }
 
@@ -867,6 +885,24 @@
 
   .candidates-header .section-label {
     margin-bottom: 0;
+  }
+
+  .multi-toggle {
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-dim);
+    letter-spacing: 0.12em;
+    padding: .5rem 1rem;
+    font-size: .65rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .multi-toggle.active {
+    border-color: var(--color-accent);
+    color: white;
+    background: var(--color-accent);
   }
 
   .export-btn {

@@ -170,6 +170,11 @@
           <IonButtons slot="start">
             <IonButton @click="cancelPicker">cancel</IonButton>
           </IonButtons>
+          <IonButtons slot="secondary">
+            <IonButton @click="previewPicker">
+              <IonIcon slot="icon-only" :icon="playOutline" />
+            </IonButton>
+          </IonButtons>
           <IonButtons slot="end">
             <IonButton @click="confirmPicker">done</IonButton>
           </IonButtons>
@@ -221,7 +226,7 @@
     IonPickerColumnOption,
     IonToast,
   } from '@ionic/vue'
-  import { close as closeIcon } from 'ionicons/icons'
+  import { playOutline } from 'ionicons/icons'
   import AboutModal from '../components/ui/AboutModal.vue'
   import SavedSessions from '../components/ui/SavedSessions.vue'
   import type { SavedSession } from '../utils/sessionStorage'
@@ -235,6 +240,7 @@
     MIDI_MAX,
     MAX_CLUSTER_SPREAD,
   } from '../data/notes'
+  import type { Cluster } from '../utils/noteUtils'
   import { isValidCluster, sortCluster } from '../utils/noteUtils'
 
   const VOICE_COLORS = [
@@ -264,7 +270,7 @@
   const router = useRouter()
   const settingsStore = useSettingsStore()
   const sequenceStore = useSequenceStore()
-  const { init } = useAudioEngine()
+  const { init, playCluster } = useAudioEngine()
 
   const voiceCount = computed(() => settingsStore.voiceCount)
   const movementSize = computed(() => settingsStore.movementSize)
@@ -290,7 +296,7 @@
   const manualError = ref('')
   const sessionCount = ref(0)
 
-  const manualMidi = ref<number[]>([60, 64, 67, 71])
+  const manualMidi = ref<number[]>([48, 52, 55, 59])
   const validMidiRange = Array.from(
     { length: MIDI_MAX - MIDI_MIN + 1 },
     (_, i) => MIDI_MIN + i
@@ -324,6 +330,13 @@
 
   function cancelPicker() {
     pickerOpen.value = false
+  }
+
+  function previewPicker() {
+    const cluster = manualMidi.value.slice(0, settingsStore.voiceCount) as Cluster
+    console.log('cluster', cluster)
+    playCluster(cluster, { bpm: settingsStore.tempo, direction: settingsStore.arpeggioDirection })
+
   }
 
   function resetToRandom() {

@@ -55,6 +55,11 @@
         <IonButtons slot="start">
           <IonButton @click="cancelEdit">cancel</IonButton>
         </IonButtons>
+        <IonButtons slot="secondary">
+          <IonButton @click="emitPreview">
+            <IonIcon slot="icon-only" :icon="playOutline" />
+          </IonButton>
+        </IonButtons>
         <IonButtons slot="end">
           <IonButton @click="commitEdit">done</IonButton>
         </IonButtons>
@@ -97,7 +102,7 @@ import {
   IonPickerColumn,
   IonPickerColumnOption,
 } from '@ionic/vue'
-import { trashOutline, createOutline } from 'ionicons/icons'
+import { trashOutline, createOutline, playOutline } from 'ionicons/icons'
 import type { Cluster } from '../../utils/noteUtils'
 import { sortCluster, isValidCluster } from '../../utils/noteUtils'
 import { midiToName, MIDI_MIN, MIDI_MAX, MAX_CLUSTER_SPREAD } from '../../data/notes'
@@ -112,6 +117,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   audition: [cluster: Cluster]
+  preview: [cluster: Cluster]
   delete: [index: number]
   edit: [index: number, newCluster: Cluster]
   reorder: [from: number, to: number]
@@ -138,6 +144,10 @@ function startEdit(cluster: Cluster, index: number) {
 function onColumnChange(voiceIndex: number, event: CustomEvent) {
   editValues.value[voiceIndex] = event.detail.value
   editError.value = ''
+}
+
+function emitPreview() {
+  emit('preview', [...editValues.value] as Cluster)
 }
 
 function commitEdit() {
