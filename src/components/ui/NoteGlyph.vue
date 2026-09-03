@@ -18,14 +18,14 @@
     <template v-else-if="type === 'eighth'">
       <ellipse cx="4" cy="16" rx="3.2" ry="2.3" transform="rotate(-20 4 16)" fill="currentColor" />
       <line x1="7" y1="15" x2="7" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-      <path d="M7,2 C10,3.5 10.5,6.5 7.5,9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+      <path d="M7,2 Q11,3.5 8.3,8.5 Q9.2,4.5 7,4 Z" fill="currentColor" />
     </template>
 
     <template v-else-if="type === 'sixteenth'">
       <ellipse cx="4" cy="16" rx="3.2" ry="2.3" transform="rotate(-20 4 16)" fill="currentColor" />
       <line x1="7" y1="15" x2="7" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-      <path d="M7,2 C10,3.5 10.5,6.5 7.5,9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-      <path d="M7,5 C10,6.5 10.5,9.5 7.5,12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+      <path d="M7,2 Q11,3.5 8.3,8.5 Q9.2,4.5 7,4 Z" fill="currentColor" />
+      <path d="M7,6.5 Q11,8 8.3,13 Q9.2,9 7,8.5 Z" fill="currentColor" />
     </template>
 
     <template v-else-if="type === 'triplet'">

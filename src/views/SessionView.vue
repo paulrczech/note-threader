@@ -185,7 +185,7 @@
 
         <div class="footer-tray" :class="{ open: footerExpanded }">
           <div class="tray-inner">
-            <div class="tray-row">
+            <div class="tray-row playback-row">
               <div class="toggle-row">
                 <button
                   v-for="d in directionOptions"
@@ -207,6 +207,7 @@
                 <span class="tempo-unit">bpm</span>
               </div>
             </div>
+            <div class="grid-section">
             <div class="tray-row subdivision-row">
               <span class="tray-label">grid</span>
               <span class="subdivision-current">{{ subdivisionLabel }}</span>
@@ -231,6 +232,7 @@
                 @click="settingsStore.setSubdivision(step.value)">
                 <NoteGlyph :type="step.glyph" :active="i === subdivisionIndex" />
               </button>
+            </div>
             </div>
             <div
               v-if="sequenceStore.sequence.length > 1"
@@ -852,9 +854,6 @@
   .footer-tray.open {
     grid-template-rows: 1fr;
     border-color: var(--color-border);
-    .tray-inner {
-      padding: 1rem;
-    }
   }
 
   .tray-inner {
@@ -863,7 +862,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    padding: 0 1rem;
   }
 
   .tray-row {
@@ -872,8 +870,23 @@
     gap: 0.5rem;
     flex-wrap: nowrap;
     &.export-row {
-      padding-top: 0.5rem;
+      padding: 0.5rem 1rem 1rem;
     }
+    &.playback-row {
+      flex-wrap: wrap;
+      row-gap: 0.6rem;
+      justify-content: space-between;
+      padding: 1rem 1rem 0.6rem;
+    }
+  }
+
+  .grid-section {
+    border-top: 1px solid var(--color-border);
+    padding: 0.8rem 1rem 1rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
   }
 
   .instrument-select {
@@ -897,7 +910,6 @@
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    margin-left: auto;
   }
 
   .adj-btn {
@@ -956,7 +968,7 @@
     --bar-background-active: var(--color-accent);
     --bar-height: 2px;
     --knob-background: var(--color-accent);
-    --knob-size: 16px;
+    --knob-size: 22px;
     --tick-background: var(--color-border);
     --tick-background-active: var(--color-accent);
     padding: 0 1rem;
