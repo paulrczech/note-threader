@@ -334,8 +334,11 @@
 
   function previewPicker() {
     const cluster = manualMidi.value.slice(0, settingsStore.voiceCount) as Cluster
-    console.log('cluster', cluster)
-    playCluster(cluster, { bpm: settingsStore.tempo, direction: settingsStore.arpeggioDirection })
+    playCluster(cluster, {
+      bpm: settingsStore.tempo,
+      direction: settingsStore.arpeggioDirection,
+      subdivision: settingsStore.subdivision,
+    })
 
   }
 

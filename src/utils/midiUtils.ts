@@ -6,15 +6,17 @@ export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 export interface MidiExportOptions {
   bpm: number
   direction: ArpeggioDirection
-  noteDuration: number     // duration of each note in seconds
-  arpeggioInterval: number // seconds between arpeggio notes (ignored for 'chord')
+  beatsPerBar: number  // one cluster occupies exactly this many beats — keeps downbeats grid-aligned
+  subdivision: number  // arpeggio notes per beat (2 = 8th notes, 4 = 16th notes) — matches useAudioEngine's playback grid
+  gapFraction: number  // fraction of one subdivision left silent before the next downbeat
 }
 
 const DEFAULT_OPTIONS: MidiExportOptions = {
   bpm: 80,
   direction: 'up',
-  noteDuration: 1.5,
-  arpeggioInterval: 0.12,
+  beatsPerBar: 4,
+  subdivision: 4,
+  gapFraction: 0.15,
 }
 
 function orderNotes(cluster: Cluster, direction: ArpeggioDirection): number[] {
@@ -46,36 +48,43 @@ export function exportSequenceAsMidi(
   midi.header.setTempo(opts.bpm)
 
   const track = midi.addTrack()
-  track.name = 'Note Threader'
+  track.name = 'Eddy'
 
-  let currentTime = 0
-  const clusterGap = 0.2  // brief silence between clusters
+  const beatSec = 60 / opts.bpm
+  const barSec = beatSec * opts.beatsPerBar
+  const subdivisionsPerBar = opts.beatsPerBar * opts.subdivision
+  const subdivisionSec = barSec / subdivisionsPerBar
+  const gapSec = subdivisionSec * opts.gapFraction
 
-  for (const cluster of sequence) {
+  sequence.forEach((cluster, barIndex) => {
+    const barStart = barIndex * barSec
     const notes = orderNotes(cluster, opts.direction)
 
     if (opts.direction === 'chord') {
       notes.forEach(midi_note => {
         track.addNote({
           midi: midi_note,
-          time: currentTime,
-          duration: opts.noteDuration,
+          time: barStart,
+          duration: barSec - gapSec,
           velocity: 0.75,
         })
       })
-      currentTime += opts.noteDuration + clusterGap
-    } else {
-      notes.forEach((midi_note, i) => {
-        track.addNote({
-          midi: midi_note,
-          time: currentTime + i * opts.arpeggioInterval,
-          duration: opts.noteDuration,
-          velocity: 0.75,
-        })
-      })
-      currentTime += notes.length * opts.arpeggioInterval + opts.noteDuration + clusterGap
+      return
     }
-  }
+
+    // Arpeggiate across the bar's subdivisions, then hold the last note
+    // through to the next downbeat — one cluster is always exactly one bar.
+    const steps = Math.min(notes.length, subdivisionsPerBar)
+    notes.slice(0, steps).forEach((midi_note, i) => {
+      const isLast = i === steps - 1
+      track.addNote({
+        midi: midi_note,
+        time: barStart + i * subdivisionSec,
+        duration: isLast ? barSec - i * subdivisionSec - gapSec : subdivisionSec,
+        velocity: 0.75,
+      })
+    })
+  })
 
   // Encode and download
   const bytes = midi.toArray()
@@ -83,7 +92,7 @@ export function exportSequenceAsMidi(
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `note-threader-${Date.now().toString(36)}.mid`
+  a.download = `eddy-${Date.now().toString(36)}.mid`
   a.click()
   URL.revokeObjectURL(url)
 }

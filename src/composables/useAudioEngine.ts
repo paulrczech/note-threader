@@ -2,7 +2,7 @@ import { ref, readonly } from 'vue'
 import * as Tone from 'tone'
 import type { Cluster } from '../utils/noteUtils'
 import { midiToName } from '../data/notes'
-import type { InstrumentType } from '../stores/settingsStore'
+import type { InstrumentType, Subdivision } from '../stores/settingsStore'
 
 // Salamander Grand Piano samples hosted on Tone.js CDN
 const SALAMANDER_BASE = 'https://tonejs.github.io/audio/salamander/'
@@ -85,6 +85,7 @@ export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 export interface PlaybackSettings {
   bpm: number
   direction: ArpeggioDirection
+  subdivision?: Subdivision  // notes per beat; defaults to 16th notes
 }
 
 // Fixed note durations for plucky/percussive instruments
@@ -125,8 +126,8 @@ function midiToTone(midi: number): string {
   return midiToName(midi)
 }
 
-function intervalFromBpm(bpm: number): number {
-  return 60 / bpm / 4
+function intervalFromBpm(bpm: number, subdivision: Subdivision = 4): number {
+  return 60 / bpm / subdivision
 }
 
 function buildArpeggioNotes(cluster: number[], direction: ArpeggioDirection): number[] {
@@ -199,7 +200,7 @@ function playCluster(
 
   stopLoop()
 
-  const interval = settings.direction === 'chord' ? 0 : intervalFromBpm(settings.bpm)
+  const interval = settings.direction === 'chord' ? 0 : intervalFromBpm(settings.bpm, settings.subdivision)
   const notes = buildArpeggioNotes(cluster, settings.direction)
   const now = Tone.now()
   // For single-cluster audition, use a 2-beat duration as the cluster window
@@ -237,7 +238,7 @@ function playSequence(
   stopLoop()
 
   const isChord = settings.direction === 'chord'
-  const interval = isChord ? 0 : intervalFromBpm(settings.bpm)
+  const interval = isChord ? 0 : intervalFromBpm(settings.bpm, settings.subdivision)
   const beat = 60 / settings.bpm
 
   const maxVoices = Math.max(...sequence.map(c => c.length))

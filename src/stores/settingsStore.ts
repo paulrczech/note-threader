@@ -7,6 +7,9 @@ export type KeyLockMode = 'free' | 'diatonic' | 'modal'
 export type LoopMode = 'auto' | 'manual' | 'capped'
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 export type InstrumentType = 'piano' | 'harp' | 'guitar-acoustic' | 'guitar-nylon' | 'cello' | 'violin'
+// Arpeggio note grid, in notes per beat — 2 = 8th notes, 4 = 16th notes. Shared by
+// live playback (useAudioEngine) and MIDI export (midiUtils) so they always match.
+export type Subdivision = 2 | 4
 
 const DEFAULTS_KEY = 'eddy_defaults'
 
@@ -27,6 +30,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const arpeggioDirection = ref<ArpeggioDirection>('up')
   const instrument = ref<InstrumentType>('harp')
   const tempo = ref<number>(80)      // BPM
+  const subdivision = ref<Subdivision>(4)  // 16th notes
 
   const keyLockActive = computed(() => keyLockMode.value !== 'free')
 
@@ -40,6 +44,7 @@ export const useSettingsStore = defineStore('settings', () => {
   function setTempo(bpm: number) { tempo.value = Math.min(200, Math.max(40, bpm)) }
   function setArpeggioDirection(d: ArpeggioDirection) { arpeggioDirection.value = d }
   function setInstrument(i: InstrumentType) { instrument.value = i }
+  function setSubdivision(s: Subdivision) { subdivision.value = s }
 
   function saveAsDefault() {
     const defaults: StoredDefaults = {
@@ -74,6 +79,7 @@ export const useSettingsStore = defineStore('settings', () => {
     arpeggioDirection,
     instrument,
     tempo,
+    subdivision,
     keyLockActive,
     setVoiceCount,
     setMovementSize,
@@ -85,6 +91,7 @@ export const useSettingsStore = defineStore('settings', () => {
     setTempo,
     setArpeggioDirection,
     setInstrument,
+    setSubdivision,
     saveAsDefault,
     loadDefaults,
   }

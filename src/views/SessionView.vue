@@ -40,6 +40,13 @@
       </ion-toolbar>
     </ion-header>
 
+    <ion-alert
+      :is-open="showResetConfirm"
+      header="start fresh?"
+      message="This clears the current flow. Anything unsaved will be lost."
+      :buttons="resetAlertButtons"
+      @didDismiss="showResetConfirm = false" />
+
     <ion-content class="ion-padding" fullscreen>
       <div class="session-layout">
         <!-- Current cluster — displayed large -->
@@ -200,6 +207,23 @@
                 <span class="tempo-unit">bpm</span>
               </div>
             </div>
+            <div class="tray-row subdivision-row">
+              <span class="tray-label">grid</span>
+              <div class="subdivision-toggle">
+                <button
+                  class="subdivision-btn"
+                  :class="{ active: settingsStore.subdivision === 2 }"
+                  @click="settingsStore.setSubdivision(2)">
+                  8th
+                </button>
+                <button
+                  class="subdivision-btn"
+                  :class="{ active: settingsStore.subdivision === 4 }"
+                  @click="settingsStore.setSubdivision(4)">
+                  16th
+                </button>
+              </div>
+            </div>
             <div
               v-if="sequenceStore.sequence.length > 1"
               class="tray-row export-row">
@@ -229,6 +253,7 @@
     IonSelect,
     IonSelectOption,
     IonIcon,
+    IonAlert,
   } from '@ionic/vue'
   import {
     save as saveIcon,
@@ -335,6 +360,7 @@
   const playbackSettings = computed(() => ({
     bpm: settingsStore.tempo,
     direction: settingsStore.arpeggioDirection,
+    subdivision: settingsStore.subdivision,
   }))
 
   onIonViewWillEnter(() => {
@@ -446,12 +472,27 @@
     advance()
   }
 
+  const showResetConfirm = ref(false)
+
   function goHome() {
+    if (sequenceStore.sequence.length > 0) {
+      showResetConfirm.value = true
+      return
+    }
+    confirmGoHome()
+  }
+
+  function confirmGoHome() {
     audioEngine.stopLoop()
     sequenceStore.reset()
     resetDeck()
     router.push('/')
   }
+
+  const resetAlertButtons = [
+    { text: 'cancel', role: 'cancel' },
+    { text: 'start fresh', role: 'destructive', handler: confirmGoHome },
+  ]
 
   function toggleLoop() {
     loopActive.value = !loopActive.value
@@ -527,7 +568,7 @@
     exportSequenceAsMidi(sequenceStore.sequence, {
       bpm: settingsStore.tempo,
       direction: settingsStore.arpeggioDirection,
-      arpeggioInterval: 60 / settingsStore.tempo / 4,
+      subdivision: settingsStore.subdivision,
     })
   }
 
@@ -852,6 +893,38 @@
     font-size: 0.62rem;
     letter-spacing: 0.1em;
     color: var(--color-text-dim);
+  }
+
+  .subdivision-row {
+    justify-content: space-between;
+  }
+
+  .tray-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--color-text-dim);
+  }
+
+  .subdivision-toggle {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .subdivision-btn {
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-dim);
+    padding: 0.4rem 0.7rem;
+    font-size: 0.65rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .subdivision-btn.active {
+    border-color: var(--color-accent);
+    color: white;
+    background: var(--color-accent);
   }
 
   .toggle-row {

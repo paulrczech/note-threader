@@ -12,6 +12,7 @@
 
 ## Sound
 - **Instrument selector UI** — strings/synth engine code already built in `useAudioEngine.ts`; add toggle on HomeView to expose piano, harp, strings, synth options
+- **Triplet subdivision** — `settingsStore.subdivision` (2 = 8th, 4 = 16th) now drives both live playback and MIDI export from one shared value, with an 8th/16th toggle in the SessionView tray ("grid"). Triplet feel wasn't in scope for this pass — would need a third value plus non-power-of-2 handling in `midiUtils.ts`'s bar-slot math
 
 ## Composition / Structure (V2 consideration)
 - **Pools** — way to group streams in The Flow into named sub-sections ("pools") for larger composition structure. Proposed UX: "organize" mode → multi-select streams → "create pool" → name it. Remaining streams stay ungrouped or in a default pool. Pools are reorderable, editable, and streams can be moved between them. MIDI export decision needed: one sequence or separate tracks per pool. Recommended first approach: metadata alongside flat sequence array (avoids rewriting engine).
