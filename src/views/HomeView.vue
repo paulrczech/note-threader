@@ -177,12 +177,10 @@
           <IonButtons slot="start">
             <IonButton @click="cancelPicker">cancel</IonButton>
           </IonButtons>
-          <IonButtons slot="secondary">
+          <IonButtons slot="end">
             <IonButton @click="previewPicker">
               <IonIcon slot="icon-only" :icon="playOutline" />
             </IonButton>
-          </IonButtons>
-          <IonButtons slot="end">
             <IonButton @click="confirmPicker">done</IonButton>
           </IonButtons>
         </IonToolbar>

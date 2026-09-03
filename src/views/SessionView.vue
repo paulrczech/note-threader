@@ -921,7 +921,7 @@
     }
     &.playback-row {
       flex-wrap: wrap;
-      row-gap: 0.6rem;
+      row-gap: 1rem;
       justify-content: space-between;
       padding: 1rem 1rem 0.6rem;
     }

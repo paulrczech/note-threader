@@ -55,12 +55,10 @@
         <IonButtons slot="start">
           <IonButton @click="cancelEdit">cancel</IonButton>
         </IonButtons>
-        <IonButtons slot="secondary">
+        <IonButtons slot="end">
           <IonButton @click="emitPreview">
             <IonIcon slot="icon-only" :icon="playOutline" />
           </IonButton>
-        </IonButtons>
-        <IonButtons slot="end">
           <IonButton @click="commitEdit">done</IonButton>
         </IonButtons>
       </IonToolbar>
