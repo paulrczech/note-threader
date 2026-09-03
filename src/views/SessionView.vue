@@ -870,7 +870,9 @@
     gap: 0.5rem;
     flex-wrap: nowrap;
     &.export-row {
-      padding: 0.5rem 1rem 1rem;
+      border-top: 1px solid var(--color-border);
+      padding: 1rem;
+      margin: 0;
     }
     &.playback-row {
       flex-wrap: wrap;
