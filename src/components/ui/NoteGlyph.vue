@@ -2,41 +2,43 @@
   <svg
     class="note-glyph"
     :class="{ active }"
-    :viewBox="type === 'triplet' ? '0 0 28 22' : '0 0 14 20'"
+    :viewBox="type === 'triplet' ? '0 0 28 22' : '0 0 90 90'"
     xmlns="http://www.w3.org/2000/svg">
     <template v-if="type === 'half'">
-      <ellipse cx="4" cy="16" rx="3.2" ry="2.3" transform="rotate(-20 4 16)"
-        fill="none" stroke="currentColor" stroke-width="1.3" />
-      <line x1="7" y1="15" x2="7" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+      <path d="M45.1,69.3 C45.1,51.2 45.0,17.0 45.0,0.2 C46.0,0.2 46.7,0.1 48.1,0.1 C48.05,25.0 48.02,50.0 48.0,74.8 L45.1,69.3 Z"
+        fill="currentColor" />
+      <path d="M23.7,87.9 C18.1,82.8 21.2,74.7 30.4,69.9 C33.5,68.4 35.8,67.7 39.8,67.8 C42.3,67.9 45.1,69.3 45.1,69.3 L48.0,74.8 C48.0,77.1 45.9,81.2 44.7,82.6 C39.2,89.2 28.5,92.2 23.7,87.9 Z"
+        fill="none" stroke="currentColor" stroke-width="4.5" />
     </template>
 
     <template v-else-if="type === 'quarter'">
-      <ellipse cx="4" cy="16" rx="3.2" ry="2.3" transform="rotate(-20 4 16)" fill="currentColor" />
-      <line x1="7" y1="15" x2="7" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+      <path d="M45.1,69.3 C45.1,51.2 45.0,17.0 45.0,0.2 C46.0,0.2 46.7,0.1 48.1,0.1 C48.05,25.0 48.02,50.0 48.0,74.8 L45.1,69.3 Z"
+        fill="currentColor" />
+      <path d="M23.7,87.9 C18.1,82.8 21.2,74.7 30.4,69.9 C33.5,68.4 35.8,67.7 39.8,67.8 C42.3,67.9 45.1,69.3 45.1,69.3 L48.0,74.8 C48.0,77.1 45.9,81.2 44.7,82.6 C39.2,89.2 28.5,92.2 23.7,87.9 Z"
+        fill="currentColor" />
     </template>
 
     <template v-else-if="type === 'eighth'">
-      <ellipse cx="4" cy="16" rx="3.2" ry="2.3" transform="rotate(-20 4 16)" fill="currentColor" />
-      <line x1="7" y1="15" x2="7" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-      <path d="M7,2 Q11,3.5 8.3,8.5 Q9.2,4.5 7,4 Z" fill="currentColor" />
+      <path d="M 23.7,87.9 C 18.1,82.8 21.2,74.7 30.4,69.9 C 33.5,68.4 35.8,67.7 39.8,67.8 C 42.3,67.9 45.1,69.3 45.1,69.3 C 45.1,51.2 45.0,17.0 45.0,0.2 C 46.0,0.2 46.7,0.1 48.1,0.1 C 48.1,1.1 48.1,1.9 48.1,2.7 C 48.1,3.6 48.1,4.1 48.2,4.7 C 49.2,11.0 50.6,13.5 57.6,21.2 C 66.5,31.1 69.1,37.0 69.1,44.9 C 69.0,52.3 62.5,68.1 61.1,67.5 C 63.1,61.9 65.9,55.9 66.6,50.9 C 67.5,44.8 65.0,36.2 61.0,31.7 C 57.8,27.9 50.2,24.6 48.1,24.6 C 48.1,24.6 48.0,61.0 48.0,74.8 C 48.0,77.1 45.9,81.2 44.7,82.6 C 39.2,89.2 28.5,92.2 23.7,87.9 z"
+        fill="currentColor" />
     </template>
 
     <template v-else-if="type === 'sixteenth'">
-      <ellipse cx="4" cy="16" rx="3.2" ry="2.3" transform="rotate(-20 4 16)" fill="currentColor" />
-      <line x1="7" y1="15" x2="7" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-      <path d="M7,2 Q11,3.5 8.3,8.5 Q9.2,4.5 7,4 Z" fill="currentColor" />
-      <path d="M7,6.5 Q11,8 8.3,13 Q9.2,9 7,8.5 Z" fill="currentColor" />
+      <path d="M 23.7,87.9 C 18.1,82.8 21.2,74.7 30.4,69.9 C 33.5,68.4 35.8,67.7 39.8,67.8 C 42.3,67.9 45.1,69.3 45.1,69.3 C 45.1,51.2 45.0,17.0 45.0,0.2 C 46.0,0.2 46.7,0.1 48.1,0.1 C 48.1,1.1 48.1,1.9 48.1,2.7 C 48.1,3.6 48.1,4.1 48.2,4.7 C 49.2,11.0 50.6,13.5 57.6,21.2 C 66.5,31.1 69.1,37.0 69.1,44.9 C 69.0,52.3 62.5,68.1 61.1,67.5 C 63.1,61.9 65.9,55.9 66.6,50.9 C 67.5,44.8 65.0,36.2 61.0,31.7 C 57.8,27.9 50.2,24.6 48.1,24.6 C 48.1,24.6 48.0,61.0 48.0,74.8 C 48.0,77.1 45.9,81.2 44.7,82.6 C 39.2,89.2 28.5,92.2 23.7,87.9 z"
+        fill="currentColor" />
+      <path d="M48.03,25.00 C48.65,28.91 49.52,30.46 53.86,35.23 C59.38,41.37 60.99,45.03 60.99,49.92 C60.93,54.51 56.90,64.31 56.03,63.94 C57.27,60.46 59.01,56.74 59.44,53.64 C60.00,49.86 58.45,44.53 55.97,41.74 C53.98,39.38 49.27,37.34 47.97,37.34 Z"
+        fill="currentColor" />
     </template>
 
     <template v-else-if="type === 'triplet'">
-      <ellipse cx="4" cy="18" rx="2.6" ry="2" fill="currentColor" />
-      <ellipse cx="13" cy="18" rx="2.6" ry="2" fill="currentColor" />
-      <ellipse cx="22" cy="18" rx="2.6" ry="2" fill="currentColor" />
-      <line x1="6.6" y1="17.3" x2="6.6" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-      <line x1="15.6" y1="17.3" x2="15.6" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-      <line x1="24.6" y1="17.3" x2="24.6" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-      <line x1="6.6" y1="6" x2="24.6" y2="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-      <text x="15.6" y="4.5" text-anchor="middle" font-size="4.5" fill="currentColor">3</text>
+      <path d="M2.66,18.87 C2.05,18.31 2.39,17.42 3.40,16.89 C3.74,16.72 3.99,16.65 4.43,16.66 C4.71,16.67 5.02,16.82 5.02,16.82 L5.34,17.43 C5.34,17.68 5.11,18.13 4.97,18.29 C4.37,19.01 3.19,19.34 2.66,18.87 Z" fill="currentColor" />
+      <path d="M5.02,16.82 C5.02,14.83 5.01,11.07 5.01,9.22 C5.12,9.22 5.19,9.21 5.35,9.21 C5.34,11.95 5.34,14.70 5.34,17.43 L5.02,16.82 Z" fill="currentColor" />
+      <path d="M11.66,18.87 C11.05,18.31 11.39,17.42 12.40,16.89 C12.74,16.72 12.99,16.65 13.43,16.66 C13.71,16.67 14.02,16.82 14.02,16.82 L14.34,17.43 C14.34,17.68 14.11,18.13 13.97,18.29 C13.37,19.01 12.19,19.34 11.66,18.87 Z" fill="currentColor" />
+      <path d="M14.02,16.82 C14.02,14.83 14.01,11.07 14.01,9.22 C14.12,9.22 14.19,9.21 14.35,9.21 C14.34,11.95 14.34,14.70 14.34,17.43 L14.02,16.82 Z" fill="currentColor" />
+      <path d="M20.66,18.87 C20.05,18.31 20.39,17.42 21.40,16.89 C21.74,16.72 21.99,16.65 22.43,16.66 C22.71,16.67 23.02,16.82 23.02,16.82 L23.34,17.43 C23.34,17.68 23.11,18.13 22.97,18.29 C22.37,19.01 21.19,19.34 20.66,18.87 Z" fill="currentColor" />
+      <path d="M23.02,16.82 C23.02,14.83 23.01,11.07 23.01,9.22 C23.12,9.22 23.19,9.21 23.35,9.21 C23.34,11.95 23.34,14.70 23.34,17.43 L23.02,16.82 Z" fill="currentColor" />
+      <line x1="5.35" y1="9.2" x2="23.35" y2="9.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      <text x="14.35" y="7.2" text-anchor="middle" font-size="4.2" fill="currentColor">3</text>
     </template>
   </svg>
 </template>
