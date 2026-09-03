@@ -79,6 +79,7 @@ const VIOLIN_URLS: Record<string, string> = {
 }
 
 const LOOP_GAP_BEATS = 1
+const BEATS_PER_BAR = 4  // 4/4 assumption, matches midiUtils.ts's bar-per-cluster export convention
 
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 
@@ -243,7 +244,7 @@ function playSequence(
 
   const maxVoices = Math.max(...sequence.map(c => c.length))
   const clusterDuration = isChord
-    ? (1 + LOOP_GAP_BEATS) * beat
+    ? BEATS_PER_BAR * beat
     : maxVoices * interval + LOOP_GAP_BEATS * beat
 
   const dur = noteDuration(clusterDuration)

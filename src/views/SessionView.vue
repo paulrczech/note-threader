@@ -209,20 +209,28 @@
             </div>
             <div class="tray-row subdivision-row">
               <span class="tray-label">grid</span>
-              <div class="subdivision-toggle">
-                <button
-                  class="subdivision-btn"
-                  :class="{ active: settingsStore.subdivision === 2 }"
-                  @click="settingsStore.setSubdivision(2)">
-                  8th
-                </button>
-                <button
-                  class="subdivision-btn"
-                  :class="{ active: settingsStore.subdivision === 4 }"
-                  @click="settingsStore.setSubdivision(4)">
-                  16th
-                </button>
-              </div>
+              <span class="subdivision-current">{{ subdivisionLabel }}</span>
+            </div>
+            <ion-range
+              class="subdivision-range"
+              :min="0"
+              :max="4"
+              :step="1"
+              snaps
+              ticks
+              :pin="false"
+              :value="subdivisionIndex"
+              @ionChange="onSubdivisionChange">
+            </ion-range>
+            <div class="subdivision-labels">
+              <button
+                v-for="(step, i) in SUBDIVISION_STEPS"
+                :key="step.label"
+                class="subdivision-label-btn"
+                :title="step.label"
+                @click="settingsStore.setSubdivision(step.value)">
+                <NoteGlyph :type="step.glyph" :active="i === subdivisionIndex" />
+              </button>
             </div>
             <div
               v-if="sequenceStore.sequence.length > 1"
@@ -254,6 +262,7 @@
     IonSelectOption,
     IonIcon,
     IonAlert,
+    IonRange,
   } from '@ionic/vue'
   import {
     save as saveIcon,
@@ -277,9 +286,10 @@
   import ClusterDisplay from '../components/cluster/ClusterDisplay.vue'
   import StrategyCard from '../components/strategy/StrategyCard.vue'
   import SequenceHistory from '../components/sequence/SequenceHistory.vue'
+  import NoteGlyph from '../components/ui/NoteGlyph.vue'
 
   import { useSequenceStore } from '../stores/sequenceStore'
-  import { useSettingsStore } from '../stores/settingsStore'
+  import { useSettingsStore, type Subdivision } from '../stores/settingsStore'
   import { useAudioEngine } from '../composables/useAudioEngine'
   import { useStrategyDeck } from '../composables/useStrategyDeck'
   import { useLoopDetection } from '../composables/useLoopDetection'
@@ -348,6 +358,13 @@
   )
 
   watch(
+    () => settingsStore.subdivision,
+    () => {
+      if (isPlaying.value) playLoop()
+    }
+  )
+
+  watch(
     () => settingsStore.instrument,
     async (newInstrument) => {
       const wasPlaying = isPlaying.value
@@ -362,6 +379,29 @@
     direction: settingsStore.arpeggioDirection,
     subdivision: settingsStore.subdivision,
   }))
+
+  const SUBDIVISION_STEPS: {
+    value: Subdivision
+    label: string
+    glyph: 'half' | 'quarter' | 'eighth' | 'triplet' | 'sixteenth'
+  }[] = [
+    { value: 0.5, label: 'half', glyph: 'half' },
+    { value: 1, label: 'quarter', glyph: 'quarter' },
+    { value: 2, label: '8th', glyph: 'eighth' },
+    { value: 3, label: 'triplet', glyph: 'triplet' },
+    { value: 4, label: '16th', glyph: 'sixteenth' },
+  ]
+
+  const subdivisionIndex = computed(() =>
+    Math.max(0, SUBDIVISION_STEPS.findIndex(s => s.value === settingsStore.subdivision))
+  )
+
+  const subdivisionLabel = computed(() => SUBDIVISION_STEPS[subdivisionIndex.value].label)
+
+  function onSubdivisionChange(event: Event) {
+    const index = (event as CustomEvent).detail.value as number
+    settingsStore.setSubdivision(SUBDIVISION_STEPS[index].value)
+  }
 
   onIonViewWillEnter(() => {
     if (!sequenceStore.currentCluster) {
@@ -905,26 +945,37 @@
     color: var(--color-text-dim);
   }
 
-  .subdivision-toggle {
-    display: flex;
-    gap: 0.3rem;
+  .subdivision-current {
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--color-text);
   }
 
-  .subdivision-btn {
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    color: var(--color-text-dim);
-    padding: 0.4rem 0.7rem;
-    font-size: 0.65rem;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.15s;
+  .subdivision-range {
+    --bar-background: var(--color-border);
+    --bar-background-active: var(--color-accent);
+    --bar-height: 2px;
+    --knob-background: var(--color-accent);
+    --knob-size: 16px;
+    --tick-background: var(--color-border);
+    --tick-background-active: var(--color-accent);
+    padding: 0 1rem;
   }
-  .subdivision-btn.active {
-    border-color: var(--color-accent);
-    color: white;
-    background: var(--color-accent);
+
+  .subdivision-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0.4rem;
+    margin-top: -0.3rem;
+  }
+
+  .subdivision-label-btn {
+    background: none;
+    border: none;
+    padding: 0.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
   }
 
   .toggle-row {

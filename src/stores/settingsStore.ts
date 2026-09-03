@@ -7,9 +7,10 @@ export type KeyLockMode = 'free' | 'diatonic' | 'modal'
 export type LoopMode = 'auto' | 'manual' | 'capped'
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 export type InstrumentType = 'piano' | 'harp' | 'guitar-acoustic' | 'guitar-nylon' | 'cello' | 'violin'
-// Arpeggio note grid, in notes per beat — 2 = 8th notes, 4 = 16th notes. Shared by
-// live playback (useAudioEngine) and MIDI export (midiUtils) so they always match.
-export type Subdivision = 2 | 4
+// Arpeggio note grid, in notes per beat — 0.5 = half, 1 = quarter, 2 = 8th,
+// 3 = triplet, 4 = 16th. Shared by live playback (useAudioEngine) and MIDI
+// export (midiUtils) so they always match.
+export type Subdivision = 0.5 | 1 | 2 | 3 | 4
 
 const DEFAULTS_KEY = 'eddy_defaults'
 

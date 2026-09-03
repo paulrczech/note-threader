@@ -56,9 +56,13 @@ export function exportSequenceAsMidi(
   const subdivisionSec = barSec / subdivisionsPerBar
   const gapSec = subdivisionSec * opts.gapFraction
 
-  sequence.forEach((cluster, barIndex) => {
-    const barStart = barIndex * barSec
+  // barCursor tracks whole bars elapsed, so every cluster still starts on a
+  // downbeat even when a coarse grid needs more than one bar to fit every voice.
+  let barCursor = 0
+
+  for (const cluster of sequence) {
     const notes = orderNotes(cluster, opts.direction)
+    const barStart = barCursor * barSec
 
     if (opts.direction === 'chord') {
       notes.forEach(midi_note => {
@@ -69,22 +73,29 @@ export function exportSequenceAsMidi(
           velocity: 0.75,
         })
       })
-      return
+      barCursor += 1
+      continue
     }
 
-    // Arpeggiate across the bar's subdivisions, then hold the last note
-    // through to the next downbeat — one cluster is always exactly one bar.
-    const steps = Math.min(notes.length, subdivisionsPerBar)
-    notes.slice(0, steps).forEach((midi_note, i) => {
-      const isLast = i === steps - 1
+    // A cluster spans however many bars its grid needs to fit every voice —
+    // coarse subdivisions never drop a note, they just take longer to state
+    // the gesture. Last note holds through to the next downbeat.
+    const barsNeeded = Math.max(1, Math.ceil(notes.length / subdivisionsPerBar))
+    const clusterEnd = barStart + barsNeeded * barSec
+
+    notes.forEach((midi_note, i) => {
+      const isLast = i === notes.length - 1
+      const noteStart = barStart + i * subdivisionSec
       track.addNote({
         midi: midi_note,
-        time: barStart + i * subdivisionSec,
-        duration: isLast ? barSec - i * subdivisionSec - gapSec : subdivisionSec,
+        time: noteStart,
+        duration: isLast ? clusterEnd - noteStart - gapSec : subdivisionSec,
         velocity: 0.75,
       })
     })
-  })
+
+    barCursor += barsNeeded
+  }
 
   // Encode and download
   const bytes = midi.toArray()
