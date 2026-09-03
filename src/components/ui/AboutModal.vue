@@ -13,17 +13,17 @@
 
         <div class="about-body">
           <p>
-            Set your notes in motion. With every turn, a strategy guides the
-            voices. Sometimes shifting one, sometimes drifting all.
+            Get your notes moving. A strategy guides the voices at each turn.
+            Sometimes one moves. Sometimes all drift.
+          </p>
+
+          <p>
+            Never mind the names of chords. Here harmony results from small,
+            organic movements - feeling inevitable without being predictable.
           </p>
           <p>
-            Forget the names of chords. Here, harmony emerges as a byproduct of
-            small, organic movements - feeling inevitable without being
-            predictable.
-          </p>
-          <p>
-            No wrong answers. Just a natural course to follow. Find your flow,
-            then export the discovery.
+            No bad answers. A natural course to follow. Find your flow and then
+            export the discovery.
           </p>
         </div>
 
