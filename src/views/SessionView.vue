@@ -47,6 +47,13 @@
       :buttons="resetAlertButtons"
       @didDismiss="showResetConfirm = false" />
 
+    <ion-alert
+      :is-open="showSaveConfirm"
+      header="overwrite or save new?"
+      :message="`This flow was already saved as &quot;${savedSessionName}&quot;. Overwrite it, or save this as a new flow?`"
+      :buttons="saveAlertButtons"
+      @didDismiss="showSaveConfirm = false" />
+
     <ion-content class="ion-padding" fullscreen>
       <div class="session-layout">
         <!-- Current cluster — displayed large -->
@@ -301,7 +308,7 @@
   import type { Strategy } from '../data/strategies'
   import type { Cluster } from '../utils/noteUtils'
   import { sortCluster } from '../utils/noteUtils'
-  import { saveSession } from '../utils/sessionStorage'
+  import { saveSession, overwriteSession, listSessions } from '../utils/sessionStorage'
   import {
     exportSequenceAsMidi,
     exportSequenceAsText,
@@ -590,17 +597,55 @@
     advance()
   }
 
-  function save() {
-    saveSession(
-      sequenceStore.sequence,
-      settingsStore.voiceCount,
-      settingsStore.instrument
-    )
+  const showSaveConfirm = ref(false)
+
+  const savedSessionName = computed(() => {
+    const id = sequenceStore.savedSessionId
+    if (!id) return ''
+    return listSessions().find(s => s.id === id)?.name ?? 'this flow'
+  })
+
+  function flashSaved() {
     savedFlash.value = true
     setTimeout(() => {
       savedFlash.value = false
     }, 1500)
   }
+
+  function save() {
+    if (sequenceStore.savedSessionId) {
+      showSaveConfirm.value = true
+      return
+    }
+    saveAsNew()
+  }
+
+  function saveAsNew() {
+    const saved = saveSession(
+      sequenceStore.sequence,
+      settingsStore.voiceCount,
+      settingsStore.instrument
+    )
+    sequenceStore.setSavedSessionId(saved.id)
+    flashSaved()
+  }
+
+  function overwriteSaved() {
+    if (!sequenceStore.savedSessionId) return
+    overwriteSession(
+      sequenceStore.savedSessionId,
+      sequenceStore.sequence,
+      settingsStore.voiceCount,
+      settingsStore.instrument
+    )
+    flashSaved()
+  }
+
+  const saveAlertButtons = [
+    { text: 'cancel', role: 'cancel' },
+    { text: 'save as new', handler: saveAsNew },
+    { text: 'overwrite', role: 'destructive', handler: overwriteSaved },
+  ]
 
   function adjustTempo(delta: number) {
     settingsStore.setTempo(settingsStore.tempo + delta)

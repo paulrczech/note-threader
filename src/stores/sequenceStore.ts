@@ -10,6 +10,7 @@ export const useSequenceStore = defineStore('sequence', () => {
   const auditioning = ref<Cluster | null>(null)
   const loopResolved = ref(false)
   const loopPoint = ref<number>(-1)
+  const savedSessionId = ref<string | null>(null)
 
   const currentCluster = computed<Cluster | null>(() =>
     sequence.value.length > 0 ? sequence.value[sequence.value.length - 1] : null
@@ -27,6 +28,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     auditioning.value = null
     loopResolved.value = false
     loopPoint.value = -1
+    savedSessionId.value = null
 
     const sorted = sortCluster(openingCluster)
     if (!isValidCluster(sorted)) {
@@ -154,6 +156,10 @@ export const useSequenceStore = defineStore('sequence', () => {
     loopPoint.value = point
   }
 
+  function setSavedSessionId(id: string | null) {
+    savedSessionId.value = id
+  }
+
   function reset() {
     sequence.value = []
     redoStack.value = []
@@ -161,6 +167,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     auditioning.value = null
     loopResolved.value = false
     loopPoint.value = -1
+    savedSessionId.value = null
   }
 
   return {
@@ -169,6 +176,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     auditioning,
     loopResolved,
     loopPoint,
+    savedSessionId,
     currentCluster,
     moveCount,
     canUndo,
@@ -186,6 +194,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     deleteAt,
     reorderSequence,
     setLoopResolved,
+    setSavedSessionId,
     reset,
   }
 })

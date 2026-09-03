@@ -44,6 +44,23 @@ export function saveSession(sequence: Cluster[], voiceCount: number, instrument?
   return session
 }
 
+export function overwriteSession(
+  id: string,
+  sequence: Cluster[],
+  voiceCount: number,
+  instrument?: InstrumentType
+): SavedSession | null {
+  const sessions = loadAll()
+  const target = sessions.find(s => s.id === id)
+  if (!target) return null
+  target.sequence = sequence
+  target.voiceCount = voiceCount
+  target.instrument = instrument
+  target.savedAt = Date.now()
+  saveAll(sessions)
+  return target
+}
+
 export function deleteSession(id: string): void {
   const sessions = loadAll().filter(s => s.id !== id)
   saveAll(sessions)

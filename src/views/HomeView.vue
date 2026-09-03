@@ -1,5 +1,12 @@
 <template>
   <ion-page>
+    <ion-alert
+      :is-open="showContinuePrompt"
+      header="continue where you left off?"
+      :message="activeFlowMessage"
+      :buttons="continueAlertButtons"
+      @didDismiss="showContinuePrompt = false" />
+
     <ion-content class="ion-padding" fullscreen>
       <button class="about-btn" @click="showAbout = true">?</button>
       <AboutModal :is-open="showAbout" @close="showAbout = false" />
@@ -212,6 +219,7 @@
 <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
+  import { onIonViewWillEnter } from '@ionic/vue'
   import {
     IonPage,
     IonContent,
@@ -225,6 +233,7 @@
     IonPickerColumn,
     IonPickerColumnOption,
     IonToast,
+    IonAlert,
   } from '@ionic/vue'
   import { playOutline } from 'ionicons/icons'
   import AboutModal from '../components/ui/AboutModal.vue'
@@ -307,11 +316,41 @@
   )
   const pickerConfirmed = ref(false)
   const toastOpen = ref(false)
+  const showContinuePrompt = ref(false)
 
   onMounted(() => {
     settingsStore.loadDefaults()
     sessionCount.value = listSessions().length
   })
+
+  onIonViewWillEnter(() => {
+    sessionCount.value = listSessions().length
+    if (sequenceStore.sequence.length > 0) {
+      showContinuePrompt.value = true
+    }
+  })
+
+  const activeFlowMessage = computed(() => {
+    const id = sequenceStore.savedSessionId
+    if (!id) return "You have an active flow that hasn't been saved. Continue it, or start fresh?"
+    const name = listSessions().find(s => s.id === id)?.name ?? 'this flow'
+    return `You have an active flow (saved as "${name}"). Continue it, or start fresh?`
+  })
+
+  function continueFlow() {
+    showContinuePrompt.value = false
+    router.push('/session')
+  }
+
+  function startFreshFromHome() {
+    sequenceStore.reset()
+    showContinuePrompt.value = false
+  }
+
+  const continueAlertButtons = [
+    { text: 'start fresh', role: 'destructive', handler: startFreshFromHome },
+    { text: 'continue', handler: continueFlow },
+  ]
 
   function openPicker() {
     pickerSnapshot.value = {
@@ -388,6 +427,7 @@
     for (let i = 1; i < session.sequence.length; i++) {
       sequenceStore.confirm(session.sequence[i])
     }
+    sequenceStore.setSavedSessionId(session.id)
     router.push('/session')
   }
 

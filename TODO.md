@@ -1,9 +1,5 @@
 # Eddy — TODO
 
-## In Progress / Partially Done
-- **Drag-to-reorder in The Flow** — `IonReorderGroup` + `IonReorder` added to `SequenceHistory.vue`, `reorderSequence()` added to store, but `@reorder` event not yet wired up in `SessionView.vue`
-- **Error message** — hardcoded "14 semitones" in `HomeView.vue` `startManual()` still needs updating to use `MAX_CLUSTER_SPREAD`
-
 ## UI / Feel
 - **Collapsible strategy card ("The Drift")** — toggle to collapsed state: strategy text smaller/truncated, refresh icon always visible. Replace "another" button label with refresh icon in both states. Easy lift.
 - **Native feel — IonSegment for toggles** — replace Voices and Movement toggle buttons on HomeView with `IonSegment`/`IonSegmentButton` for a more native selection feel
