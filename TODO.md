@@ -17,4 +17,5 @@
 ## V2
 - **5-voice support**
 - **Capacitor native build + App Store submission**
+  - Set the native iOS audio session category to `playback` (e.g. via a Capacitor plugin or a small native config) so playback ignores the hardware mute switch, matching YouTube/Spotify-style apps. Without this, the app inherits Safari's default Web Audio behavior of going silent when the phone is muted — confirmed on the current Netlify build.
 - **Note editing within sequence entries** — scope needs clarification before implementing
