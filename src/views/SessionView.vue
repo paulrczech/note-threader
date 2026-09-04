@@ -297,7 +297,7 @@
 
   import { useSequenceStore } from '../stores/sequenceStore'
   import { useSettingsStore, type Subdivision } from '../stores/settingsStore'
-  import { useAudioEngine } from '../composables/useAudioEngine'
+  import { useAudioEngine, INSTRUMENT_NOTE_RANGE } from '../composables/useAudioEngine'
   import { useStrategyDeck } from '../composables/useStrategyDeck'
   import { useLoopDetection } from '../composables/useLoopDetection'
   import { generateCandidates } from '../composables/useVoiceLeading'
@@ -580,8 +580,10 @@
     sequenceStore.setLoopResolved(false)
   }
 
+  const instrumentRange = computed(() => INSTRUMENT_NOTE_RANGE[settingsStore.instrument])
+
   function editCluster(index: number, newCluster: Cluster) {
-    sequenceStore.editClusterAt(index, newCluster)
+    sequenceStore.editClusterAt(index, newCluster, instrumentRange.value)
     if (index === sequenceStore.sequence.length - 1) {
       sequenceStore.setLoopResolved(false)
       advance()

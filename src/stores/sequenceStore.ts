@@ -20,7 +20,7 @@ export const useSequenceStore = defineStore('sequence', () => {
   const canUndo = computed(() => sequence.value.length > 1)
   const canRedo = computed(() => redoStack.value.length > 0)
 
-  function start(openingCluster: Cluster) {
+  function start(openingCluster: Cluster, bounds?: { min: number; max: number }) {
     // Always clear old session first — never let stale data leak through
     sequence.value = []
     redoStack.value = []
@@ -31,7 +31,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     savedSessionId.value = null
 
     const sorted = sortCluster(openingCluster)
-    if (!isValidCluster(sorted)) {
+    if (!isValidCluster(sorted, bounds)) {
       console.warn('Invalid opening cluster', sorted)
       return
     }
@@ -126,10 +126,10 @@ export const useSequenceStore = defineStore('sequence', () => {
     auditioning.value = null
   }
 
-  function editClusterAt(index: number, newCluster: Cluster) {
+  function editClusterAt(index: number, newCluster: Cluster, bounds?: { min: number; max: number }) {
     if (index < 0 || index >= sequence.value.length) return
     const sorted = sortCluster(newCluster)
-    if (!isValidCluster(sorted)) return
+    if (!isValidCluster(sorted, bounds)) return
     sequence.value[index] = sorted
   }
 

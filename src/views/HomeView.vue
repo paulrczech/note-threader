@@ -423,7 +423,7 @@
     if (session.instrument) settingsStore.setInstrument(session.instrument)
     await init(settingsStore.instrument)
     settingsStore.setVoiceCount(session.voiceCount as 3 | 4)
-    sequenceStore.start(session.sequence[0])
+    sequenceStore.start(session.sequence[0], INSTRUMENT_NOTE_RANGE[settingsStore.instrument])
     for (let i = 1; i < session.sequence.length; i++) {
       sequenceStore.confirm(session.sequence[i])
     }
@@ -457,7 +457,7 @@
     }
 
     await init(settingsStore.instrument)
-    sequenceStore.start(sorted)
+    sequenceStore.start(sorted, range)
     router.push('/session')
   }
 </script>
