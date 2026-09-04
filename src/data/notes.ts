@@ -9,7 +9,7 @@ export const MIDI_SEED_MIN = MIDI_MIN  // matches global floor — keeps random 
 export const MIDI_SEED_MAX = 59        // B3 — stays below middle C, so seeds land in octave 2-3
 
 // Max semitone spread between lowest and highest voice in a cluster
-export const MAX_CLUSTER_SPREAD = 31  // two and a half octaves
+export const MAX_CLUSTER_SPREAD = 40  // just over three octaves
 
 export function midiToName(midi: number): string {
   const octave = Math.floor(midi / 12) - 1

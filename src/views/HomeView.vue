@@ -435,9 +435,24 @@
     manualError.value = ''
     const selected = manualMidi.value.slice(0, settingsStore.voiceCount)
     const sorted = sortCluster(selected)
+    const range = instrumentRange.value
 
-    if (!isValidCluster(sorted)) {
+    const outOfRange = sorted.find(n => n < range.min || n > range.max)
+    if (outOfRange !== undefined) {
+      manualError.value = `invalid cluster — note out of range for this instrument (${midiToName(range.min)}–${midiToName(range.max)})`
+      return
+    }
+    const spread = sorted[sorted.length - 1] - sorted[0]
+    if (spread > MAX_CLUSTER_SPREAD) {
       manualError.value = `invalid cluster — spread too wide (max ${MAX_CLUSTER_SPREAD} semitones)`
+      return
+    }
+    if (new Set(sorted).size !== sorted.length) {
+      manualError.value = 'invalid cluster — duplicate notes'
+      return
+    }
+    if (!isValidCluster(sorted, range)) {
+      manualError.value = 'invalid cluster'
       return
     }
 

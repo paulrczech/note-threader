@@ -7,11 +7,16 @@ export function sortCluster(cluster: Cluster): Cluster {
   return [...cluster].sort((a, b) => a - b)
 }
 
-// Check if a cluster satisfies all hard constraints
-export function isValidCluster(cluster: Cluster): boolean {
+// Check if a cluster satisfies all hard constraints. `bounds` defaults to the global
+// MIDI_MIN/MAX (used throughout the voice-leading engine); manual-entry pickers pass an
+// instrument-specific range instead, without affecting movement/candidate generation.
+export function isValidCluster(
+  cluster: Cluster,
+  bounds: { min: number; max: number } = { min: MIDI_MIN, max: MIDI_MAX }
+): boolean {
   if (cluster.length < 2) return false
   for (const note of cluster) {
-    if (note < MIDI_MIN || note > MIDI_MAX) return false
+    if (note < bounds.min || note > bounds.max) return false
   }
   const sorted = sortCluster(cluster)
   if (sorted[sorted.length - 1] - sorted[0] > MAX_CLUSTER_SPREAD) return false

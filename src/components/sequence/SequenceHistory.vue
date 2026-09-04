@@ -125,8 +125,9 @@ const emit = defineEmits<{
 
 const voiceColors = VOICE_COLORS
 const settingsStore = useSettingsStore()
+const instrumentRange = computed(() => INSTRUMENT_NOTE_RANGE[settingsStore.instrument])
 const validMidiRange = computed(() => {
-  const { min, max } = INSTRUMENT_NOTE_RANGE[settingsStore.instrument]
+  const { min, max } = instrumentRange.value
   return Array.from({ length: max - min + 1 }, (_, i) => min + i)
 })
 
@@ -156,10 +157,28 @@ function emitPreview() {
 
 function commitEdit() {
   const newCluster = [...editValues.value] as Cluster
-  if (!isValidCluster(newCluster)) {
+  const sorted = sortCluster(newCluster)
+  const range = instrumentRange.value
+
+  const outOfRange = sorted.find(n => n < range.min || n > range.max)
+  if (outOfRange !== undefined) {
+    editError.value = `note out of range for this instrument (${midiToName(range.min)}–${midiToName(range.max)})`
+    return
+  }
+  const spread = sorted[sorted.length - 1] - sorted[0]
+  if (spread > MAX_CLUSTER_SPREAD) {
     editError.value = `spread too wide (max ${MAX_CLUSTER_SPREAD} semitones)`
     return
   }
+  if (new Set(sorted).size !== sorted.length) {
+    editError.value = 'duplicate notes'
+    return
+  }
+  if (!isValidCluster(newCluster, range)) {
+    editError.value = 'invalid cluster'
+    return
+  }
+
   pickerOpen.value = false
   emit('edit', editingIndex.value!, newCluster)
   editingIndex.value = null
