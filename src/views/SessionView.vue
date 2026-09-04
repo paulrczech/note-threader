@@ -178,8 +178,6 @@
             <ion-select-option value="harp">harp</ion-select-option>
             <ion-select-option value="guitar-acoustic">guitar (ac)</ion-select-option>
             <ion-select-option value="guitar-nylon">guitar (ny)</ion-select-option>
-            <ion-select-option value="cello">cello</ion-select-option>
-            <ion-select-option value="violin">violin</ion-select-option>
           </ion-select>
           <button
             class="footer-expand-btn"

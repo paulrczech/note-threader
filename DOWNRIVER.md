@@ -111,7 +111,7 @@ Add `@capacitor/share` plugin. Wire up MIDI and text export buttons to the nativ
 - Platform-adaptive UI: Ionic handles most of this, targeted pass needed
 
 ### Sample Bundling (before App Store release)
-Currently all samples (piano, harp, guitars, cello, violin) load from external CDNs. For App Store submission, bundle samples locally inside the app for reliability and offline use. Larger binary but fully self-contained — required for a robust public release.
+Currently all samples (piano, harp, guitars) load from external CDNs. For App Store submission, bundle samples locally inside the app for reliability and offline use. Larger binary but fully self-contained — required for a robust public release.
 
 ### Privacy
 Eddy stores nothing remotely, no accounts, no tracking. Privacy policy is a one-pager. Clean App Store story.

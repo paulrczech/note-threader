@@ -12,7 +12,7 @@ A minimal music utility for voice leading guided by oblique strategies. Users mo
 
 ## Key constraints
 
-- MIDI range: G3(55)–C6(84). Spread ≤14 semitones. Seed zone C4(60)–C5(72).
+- MIDI range: E2(40)–C6(84). Spread ≤31 semitones. Seed zone C4(60)–C5(72).
 - No voice crossing (sorted ascending always). No chord names — purely voice movement.
 - Always sharps (C#, F#, etc.)
 - 3 or 4 voices only (5 = V2)
@@ -27,7 +27,7 @@ A minimal music utility for voice leading guided by oblique strategies. Users mo
 - `src/utils/midiUtils.ts` — exportSequenceAsMidi() (direction-aware), exportSequenceAsText()
 - `src/composables/useVoiceLeading.ts` — generateCandidates(cluster, strategy, options), MAX_CANDIDATES=6
 - `src/composables/useStrategyDeck.ts` — useStrategyDeck(keyLockActive), draw() returns Strategy | null
-- `src/composables/useAudioEngine.ts` — singleton pattern, Tone.js sampler + PolySynth support, humanized velocity, RAF-based playingIndex tracking
+- `src/composables/useAudioEngine.ts` — singleton pattern, Tone.js Sampler-based instruments (piano/harp/guitar-acoustic/guitar-nylon), humanized velocity, RAF-based playingIndex tracking
 - `src/stores/settingsStore.ts` — voiceCount, movementSize, keyLockMode, keyRoot, scaleId, loopMode, maxMoves, arpeggioDirection, instrument, tempo
 - `src/stores/sequenceStore.ts` — sequence, redoStack, undo/redo, transposeOctave(), canTransposeOctave(), editClusterAt()
 - `src/views/HomeView.vue` — settings, manual entry, saved sessions, single start button (toggles between "let it begin" / "begin here")
@@ -63,7 +63,6 @@ A minimal music utility for voice leading guided by oblique strategies. Users mo
 - **start()**: Always clears state first before validating — prevents stale session data leaking
 - **Single start button**: HomeView shows "let it begin" OR "begin here" (v-if/v-else on showManual) — never both at once
 - **Direction/tempo/instrument changes during playback**: watchers in SessionView call playLoop() (restarts cleanly)
-- **Instrument**: Piano only in UI for now. Strings/synth engine code intact in useAudioEngine.ts — re-enable by adding toggle to HomeView.
 
 ## Copy/labels
 
@@ -82,7 +81,7 @@ A minimal music utility for voice leading guided by oblique strategies. Users mo
 
 ## V2 / deferred
 
-- Instrument selector UI now live — strings/synth/pluck removed, replaced with cello/violin/guitar-acoustic/guitar-nylon
+- Instrument selector UI live — piano/harp/guitar-acoustic/guitar-nylon. Cello and violin were tried and removed (didn't sound good on the available samples); strings/synth engine code from earlier exploration is gone, not just hidden
 - Capacitor native build
 - 5-voice support
 - See DOWNRIVER.md for full future vision

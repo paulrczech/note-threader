@@ -6,7 +6,7 @@ export type MovementSize = 'half' | 'step' | 'whole' | 'third' | 'free'
 export type KeyLockMode = 'free' | 'diatonic' | 'modal'
 export type LoopMode = 'auto' | 'manual' | 'capped'
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
-export type InstrumentType = 'piano' | 'harp' | 'guitar-acoustic' | 'guitar-nylon' | 'cello' | 'violin'
+export type InstrumentType = 'piano' | 'harp' | 'guitar-acoustic' | 'guitar-nylon'
 // Arpeggio note grid, in notes per beat — 0.5 = half, 1 = quarter, 2 = 8th,
 // 3 = triplet, 4 = 16th. Shared by live playback (useAudioEngine) and MIDI
 // export (midiUtils) so they always match.

@@ -270,8 +270,6 @@
     { label: 'harp', value: 'harp' },
     { label: 'guitar (acoustic)', value: 'guitar-acoustic' },
     { label: 'guitar (nylon)', value: 'guitar-nylon' },
-    { label: 'cello', value: 'cello' },
-    { label: 'violin', value: 'violin' },
   ]
 
   const router = useRouter()

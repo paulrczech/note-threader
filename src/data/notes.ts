@@ -3,7 +3,7 @@ export const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A',
 export type NoteName = typeof NOTE_NAMES[number]
 
 // MIDI note constraints
-export const MIDI_MIN = 43  // G2 — low boundary
+export const MIDI_MIN = 40  // E2 — low boundary (lowest open string on standard-tuned guitar)
 export const MIDI_MAX = 84  // C6 — high boundary
 export const MIDI_SEED_MIN = 60  // C4 — low end of seed zone
 export const MIDI_SEED_MAX = 72  // C5 — high end of seed zone
