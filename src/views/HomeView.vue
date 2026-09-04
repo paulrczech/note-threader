@@ -215,7 +215,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, watch, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { onIonViewWillEnter } from '@ionic/vue'
   import {
@@ -240,11 +240,9 @@
   import { listSessions } from '../utils/sessionStorage'
   import { useSettingsStore } from '../stores/settingsStore'
   import { useSequenceStore } from '../stores/sequenceStore'
-  import { useAudioEngine } from '../composables/useAudioEngine'
+  import { useAudioEngine, INSTRUMENT_NOTE_RANGE } from '../composables/useAudioEngine'
   import {
     midiToName,
-    MIDI_MIN,
-    MIDI_MAX,
     MAX_CLUSTER_SPREAD,
   } from '../data/notes'
   import type { Cluster } from '../utils/noteUtils'
@@ -302,10 +300,16 @@
   const sessionCount = ref(0)
 
   const manualMidi = ref<number[]>([48, 52, 55, 59])
-  const validMidiRange = Array.from(
-    { length: MIDI_MAX - MIDI_MIN + 1 },
-    (_, i) => MIDI_MIN + i
-  )
+  const instrumentRange = computed(() => INSTRUMENT_NOTE_RANGE[settingsStore.instrument])
+  const validMidiRange = computed(() => {
+    const { min, max } = instrumentRange.value
+    return Array.from({ length: max - min + 1 }, (_, i) => min + i)
+  })
+
+  // Keep manual selections inside the picker range if the instrument changes underneath them
+  watch(instrumentRange, ({ min, max }) => {
+    manualMidi.value = manualMidi.value.map(midi => Math.min(Math.max(midi, min), max))
+  })
 
   const pickerSnapshot = ref<{ midi: number[]; showManual: boolean } | null>(
     null
@@ -367,14 +371,14 @@
     pickerOpen.value = false
   }
 
-  function previewPicker() {
+  async function previewPicker() {
+    await init(settingsStore.instrument)
     const cluster = manualMidi.value.slice(0, settingsStore.voiceCount) as Cluster
     playCluster(cluster, {
       bpm: settingsStore.tempo,
       direction: settingsStore.arpeggioDirection,
       subdivision: settingsStore.subdivision,
     })
-
   }
 
   function resetToRandom() {

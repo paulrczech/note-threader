@@ -1,7 +1,7 @@
 import { ref, readonly } from 'vue'
 import * as Tone from 'tone'
 import type { Cluster } from '../utils/noteUtils'
-import { midiToName } from '../data/notes'
+import { midiToName, MIDI_MIN, MIDI_MAX } from '../data/notes'
 import type { InstrumentType, Subdivision } from '../stores/settingsStore'
 
 // Salamander Grand Piano samples hosted on Tone.js CDN
@@ -54,6 +54,17 @@ const GUITAR_NYLON_URLS: Record<string, string> = {
   'F#2': 'Fs2.mp3', 'F#3': 'Fs3.mp3', 'F#4': 'Fs4.mp3', 'F#5': 'Fs5.mp3',
   'G3': 'G3.mp3',  'G5': 'G5.mp3',
   'G#2': 'Gs2.mp3', 'G#4': 'Gs4.mp3', 'G#5': 'Gs5.mp3',
+}
+
+// Note-picker range per instrument — picker-only, matches each instrument's natural/sampled
+// register. Does NOT affect the voice-leading engine, which always uses the global MIDI_MIN/
+// MIDI_MAX regardless of instrument, so switching instruments mid-flow never changes which
+// moves are reachable — only what you can type in as a starting cluster.
+export const INSTRUMENT_NOTE_RANGE: Record<InstrumentType, { min: number; max: number }> = {
+  piano:            { min: 33,       max: MIDI_MAX }, // A1–C6
+  harp:             { min: 36,       max: 88 },       // C2–E6
+  'guitar-acoustic': { min: MIDI_MIN, max: MIDI_MAX },
+  'guitar-nylon':    { min: MIDI_MIN, max: MIDI_MAX },
 }
 
 const LOOP_GAP_BEATS = 1

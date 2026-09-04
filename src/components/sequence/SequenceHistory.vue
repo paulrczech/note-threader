@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   IonReorderGroup,
   IonReorder,
@@ -103,7 +103,9 @@ import {
 import { trashOutline, createOutline, playOutline } from 'ionicons/icons'
 import type { Cluster } from '../../utils/noteUtils'
 import { sortCluster, isValidCluster } from '../../utils/noteUtils'
-import { midiToName, MIDI_MIN, MIDI_MAX, MAX_CLUSTER_SPREAD } from '../../data/notes'
+import { midiToName, MAX_CLUSTER_SPREAD } from '../../data/notes'
+import { INSTRUMENT_NOTE_RANGE } from '../../composables/useAudioEngine'
+import { useSettingsStore } from '../../stores/settingsStore'
 
 const VOICE_COLORS = ['var(--voice-1)', 'var(--voice-2)', 'var(--voice-3)', 'var(--voice-4)']
 
@@ -122,7 +124,11 @@ const emit = defineEmits<{
 }>()
 
 const voiceColors = VOICE_COLORS
-const validMidiRange = Array.from({ length: MIDI_MAX - MIDI_MIN + 1 }, (_, i) => MIDI_MIN + i)
+const settingsStore = useSettingsStore()
+const validMidiRange = computed(() => {
+  const { min, max } = INSTRUMENT_NOTE_RANGE[settingsStore.instrument]
+  return Array.from({ length: max - min + 1 }, (_, i) => min + i)
+})
 
 const activeIndex = ref(props.sequence.length - 1)
 watch(() => props.sequence.length, (len) => { activeIndex.value = len - 1 })
