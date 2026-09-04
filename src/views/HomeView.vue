@@ -325,6 +325,11 @@
 
   onIonViewWillEnter(() => {
     sessionCount.value = listSessions().length
+    // The source picker is single-use pre-session config — never let a prior manual
+    // selection linger once we're back at Home (Ionic keeps this component instance
+    // alive across the round trip, so local refs don't reset on their own).
+    showManual.value = false
+    manualMidi.value = [48, 52, 55, 59]
     if (sequenceStore.sequence.length > 0) {
       showContinuePrompt.value = true
     }

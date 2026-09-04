@@ -73,11 +73,14 @@ function movableVoiceIndices(strategy: Strategy, cluster: Cluster): number[] {
 }
 
 // Build the set of allowed MIDI notes (full range or scale-filtered)
-function buildAllowedNoteSet(options: VoiceLeadingOptions): Set<number> | undefined {
+function buildAllowedNoteSet(
+  options: VoiceLeadingOptions,
+  bounds: { min: number; max: number }
+): Set<number> | undefined {
   if (!options.keyLockActive || !options.scaleId || options.keyRoot === undefined) {
     return undefined  // no restriction
   }
-  const notes = getScaleNotes(options.keyRoot, options.scaleId, MIDI_MIN, MIDI_MAX)
+  const notes = getScaleNotes(options.keyRoot, options.scaleId, bounds.min, bounds.max)
   return new Set(notes)
 }
 
@@ -85,19 +88,20 @@ function buildAllowedNoteSet(options: VoiceLeadingOptions): Set<number> | undefi
 function generateSingleVoiceCandidates(
   cluster: Cluster,
   strategy: Strategy,
-  allowedNotes: Set<number> | undefined
+  allowedNotes: Set<number> | undefined,
+  bounds: { min: number; max: number }
 ): Cluster[] {
   const { min, max } = intervalBounds(strategy.movementType)
   const candidates: Cluster[] = []
   const movable = movableVoiceIndices(strategy, cluster)
 
   for (const voiceIdx of movable) {
-    const targets = reachableNotes(cluster[voiceIdx], min, max, allowedNotes)
+    const targets = reachableNotes(cluster[voiceIdx], min, max, allowedNotes, bounds)
     for (const target of targets) {
       const newCluster = [...cluster]
       newCluster[voiceIdx] = target
       const sorted = sortCluster(newCluster)
-      if (isValidCluster(sorted)) {
+      if (isValidCluster(sorted, bounds)) {
         candidates.push(sorted)
       }
     }
@@ -109,7 +113,8 @@ function generateSingleVoiceCandidates(
 function generateAllVoiceSameDirection(
   cluster: Cluster,
   strategy: Strategy,
-  allowedNotes: Set<number> | undefined
+  allowedNotes: Set<number> | undefined,
+  bounds: { min: number; max: number }
 ): Cluster[] {
   const { min } = intervalBounds(strategy.movementType)
   const step = min  // use min interval for uniform movement
@@ -118,7 +123,7 @@ function generateAllVoiceSameDirection(
   for (const dir of [1, -1]) {
     const newCluster = cluster.map(note => note + dir * step)
     const sorted = sortCluster(newCluster)
-    if (isValidCluster(sorted)) {
+    if (isValidCluster(sorted, bounds)) {
       if (!allowedNotes || newCluster.every(n => allowedNotes.has(n))) {
         candidates.push(sorted)
       }
@@ -131,7 +136,8 @@ function generateAllVoiceSameDirection(
 function generateAllButOneCandidates(
   cluster: Cluster,
   strategy: Strategy,
-  allowedNotes: Set<number> | undefined
+  allowedNotes: Set<number> | undefined,
+  bounds: { min: number; max: number }
 ): Cluster[] {
   const { min, max } = intervalBounds(strategy.movementType)
   const n = cluster.length
@@ -143,7 +149,7 @@ function generateAllButOneCandidates(
 
     // Generate all combinations of target notes for moving voices
     const targetSets: number[][] = movingIndices.map(idx =>
-      reachableNotes(cluster[idx], min, max, allowedNotes)
+      reachableNotes(cluster[idx], min, max, allowedNotes, bounds)
     )
 
     // Cartesian product of target sets (bounded — movingIndices.length is small)
@@ -154,7 +160,7 @@ function generateAllButOneCandidates(
         newCluster[voiceIdx] = combo[i]
       })
       const sorted = sortCluster(newCluster)
-      if (isValidCluster(sorted)) {
+      if (isValidCluster(sorted, bounds)) {
         candidates.push(sorted)
       }
     }
@@ -189,21 +195,30 @@ export function generateCandidates(
     return []
   }
 
-  const allowedNotes = buildAllowedNoteSet(options)
+  // Widen the global range just enough to cover the current cluster's own register —
+  // otherwise a session started outside [MIDI_MIN, MIDI_MAX] (piano/harp's wider picker
+  // range) strands every voice with zero reachable notes. Reduces to the plain global
+  // range whenever the cluster is already inside it, so ordinary sessions are unaffected.
+  const bounds = {
+    min: Math.min(MIDI_MIN, ...cluster),
+    max: Math.max(MIDI_MAX, ...cluster),
+  }
+
+  const allowedNotes = buildAllowedNoteSet(options, bounds)
   let candidates: Cluster[] = []
 
   switch (strategy.voicesAllowedToMove) {
     case 'all':
       if (strategy.movementType === 'half' || strategy.movementType === 'whole') {
         // all-voices-same-direction (e.g. "move every voice by half step")
-        candidates = generateAllVoiceSameDirection(cluster, strategy, allowedNotes)
+        candidates = generateAllVoiceSameDirection(cluster, strategy, allowedNotes, bounds)
       } else {
-        candidates = generateSingleVoiceCandidates(cluster, strategy, allowedNotes)
+        candidates = generateSingleVoiceCandidates(cluster, strategy, allowedNotes, bounds)
       }
       break
 
     case 'all-but-one':
-      candidates = generateAllButOneCandidates(cluster, strategy, allowedNotes)
+      candidates = generateAllButOneCandidates(cluster, strategy, allowedNotes, bounds)
       break
 
     case 'one':
@@ -213,11 +228,11 @@ export function generateCandidates(
     case 'lower':
     case 'most-dissonant-held':
     case 'least-expected-held':
-      candidates = generateSingleVoiceCandidates(cluster, strategy, allowedNotes)
+      candidates = generateSingleVoiceCandidates(cluster, strategy, allowedNotes, bounds)
       break
 
     default:
-      candidates = generateSingleVoiceCandidates(cluster, strategy, allowedNotes)
+      candidates = generateSingleVoiceCandidates(cluster, strategy, allowedNotes, bounds)
   }
 
   // Remove duplicates, remove the current cluster itself, cap results
