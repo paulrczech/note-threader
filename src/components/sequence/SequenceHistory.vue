@@ -1,7 +1,7 @@
 <template>
   <div class="sequence-history">
     <p class="section-label">the flow</p>
-    <div class="history-scroll">
+    <div class="history-scroll" ref="scrollEl">
       <IonReorderGroup :disabled="false" @ionItemReorder="onReorder($event)">
         <div
           v-for="(cluster, i) in sequence"
@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import {
   IonReorderGroup,
   IonReorder,
@@ -132,7 +132,14 @@ const validMidiRange = computed(() => {
 })
 
 const activeIndex = ref(props.sequence.length - 1)
-watch(() => props.sequence.length, (len) => { activeIndex.value = len - 1 })
+const scrollEl = ref<HTMLElement | null>(null)
+
+watch(() => props.sequence.length, (len) => {
+  activeIndex.value = len - 1
+  nextTick(() => {
+    scrollEl.value?.scrollTo({ top: scrollEl.value.scrollHeight, behavior: 'smooth' })
+  })
+})
 
 const pickerOpen = ref(false)
 const editingIndex = ref<number | null>(null)
@@ -214,6 +221,8 @@ function confirmDelete(index: number) {
   flex-direction: column;
   gap: 2px;
   overflow-x: hidden;
+  max-height: 38vh;
+  overflow-y: auto;
 }
 
 .history-row {
