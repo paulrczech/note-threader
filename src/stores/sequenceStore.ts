@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Cluster, sortCluster, isValidCluster } from '../utils/noteUtils'
-import { MIDI_SEED_MAX, MIDI_MIN, MIDI_MAX } from '../data/notes'
+import { MIDI_SEED_MIN, MIDI_SEED_MAX, MIDI_MIN, MIDI_MAX } from '../data/notes'
 
 export const useSequenceStore = defineStore('sequence', () => {
   const sequence = ref<Cluster[]>([])
@@ -45,9 +45,9 @@ export const useSequenceStore = defineStore('sequence', () => {
     // Previous approach broke early when notes went too high, producing silent failures.
     for (let attempt = 0; attempt < 30; attempt++) {
       notes = []
-      // Seed anywhere from MIDI_MIN up to MIDI_SEED_MAX, leaving headroom for voices above
-      const seedRange = MIDI_SEED_MAX - MIDI_MIN
-      notes.push(MIDI_MIN + Math.floor(Math.random() * seedRange))
+      // Seed within the dedicated seed zone (octave 2-3), leaving headroom for voices above
+      const seedRange = MIDI_SEED_MAX - MIDI_SEED_MIN
+      notes.push(MIDI_SEED_MIN + Math.floor(Math.random() * seedRange))
 
       while (notes.length < voiceCount) {
         const prev = notes[notes.length - 1]

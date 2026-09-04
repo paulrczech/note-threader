@@ -5,8 +5,8 @@ export type NoteName = typeof NOTE_NAMES[number]
 // MIDI note constraints
 export const MIDI_MIN = 40  // E2 — low boundary (lowest open string on standard-tuned guitar)
 export const MIDI_MAX = 84  // C6 — high boundary
-export const MIDI_SEED_MIN = 60  // C4 — low end of seed zone
-export const MIDI_SEED_MAX = 72  // C5 — high end of seed zone
+export const MIDI_SEED_MIN = MIDI_MIN  // matches global floor — keeps random starts in the guitar-friendly low end
+export const MIDI_SEED_MAX = 59        // B3 — stays below middle C, so seeds land in octave 2-3
 
 // Max semitone spread between lowest and highest voice in a cluster
 export const MAX_CLUSTER_SPREAD = 31  // two and a half octaves
