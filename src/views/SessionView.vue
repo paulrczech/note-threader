@@ -56,14 +56,6 @@
 
     <ion-content class="ion-padding" fullscreen>
       <div class="session-layout">
-        <!-- Current cluster — displayed large -->
-        <div class="current-cluster-block">
-          <p class="section-label">current</p>
-          <ClusterDisplay
-            v-if="sequenceStore.currentCluster"
-            :cluster="auditioning ?? sequenceStore.currentCluster" />
-        </div>
-
         <!-- Loop resolved banner -->
         <div v-if="sequenceStore.loopResolved" class="loop-banner">
           a loop has formed — {{ sequenceStore.moveCount }} moves
@@ -74,6 +66,15 @@
           v-if="activeStrategy && !sequenceStore.loopResolved"
           :strategy="activeStrategy"
           @redraw="redraw" />
+
+        <!-- Current cluster — the last confirmed move, always tappable to hear -->
+        <button
+          v-if="sequenceStore.currentCluster"
+          class="current-cluster-block"
+          @click="playCurrentCluster">
+          <p class="section-label">now</p>
+          <ClusterDisplay :cluster="sequenceStore.currentCluster" />
+        </button>
 
         <!-- Candidates -->
         <div
@@ -333,7 +334,6 @@
   const candidates = ref<Cluster[]>([])
   const activeStrategy = ref<Strategy | null>(null)
   const selectedIndices = ref<number[]>([]) // ordered by tap — drives add sequence
-  const auditioning = ref<Cluster | null>(null)
   const savedFlash = ref(false)
   const copiedFlash = ref(false)
   const footerExpanded = ref(false)
@@ -424,7 +424,6 @@
 
   function advance() {
     selectedIndices.value = []
-    auditioning.value = null
     activeStrategy.value = null
     multiSelect.value = false
     if (!sequenceStore.currentCluster) return
@@ -460,12 +459,14 @@
   function toggleMultiSelect() {
     multiSelect.value = !multiSelect.value
     selectedIndices.value = []
-    auditioning.value = null
+  }
+
+  function playCurrentCluster() {
+    if (!sequenceStore.currentCluster) return
+    audioEngine.playCluster(sequenceStore.currentCluster, playbackSettings.value)
   }
 
   function selectCandidate(cluster: Cluster, index: number) {
-    auditioning.value = cluster
-    sequenceStore.audition(cluster)
     audioEngine.playCluster(cluster, playbackSettings.value)
 
     if (multiSelect.value) {
@@ -727,7 +728,20 @@
   }
 
   .current-cluster-block {
-    padding-top: 0.5rem;
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0 0;
+    background: none;
+    border: none;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: opacity 0.15s;
+  }
+  .current-cluster-block:hover,
+  .current-cluster-block:active {
+    opacity: 0.75;
   }
 
 

@@ -38,7 +38,7 @@
   .cluster-display {
     display: flex;
     align-items: flex-end;
-    gap: 0.6rem;
+    gap: 0.45rem;
     transition: opacity 0.2s;
   }
 
@@ -54,7 +54,7 @@
 
   .note-label {
     font-family: var(--font-serif);
-    font-size: 2rem;
+    font-size: 1.3rem;
     font-weight: 300;
     letter-spacing: 0.06em;
     line-height: 1;

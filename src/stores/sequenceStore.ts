@@ -7,7 +7,6 @@ export const useSequenceStore = defineStore('sequence', () => {
   const sequence = ref<Cluster[]>([])
   const redoStack = ref<Cluster[]>([])
   const candidates = ref<Cluster[]>([])
-  const auditioning = ref<Cluster | null>(null)
   const loopResolved = ref(false)
   const loopPoint = ref<number>(-1)
   const savedSessionId = ref<string | null>(null)
@@ -25,7 +24,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     sequence.value = []
     redoStack.value = []
     candidates.value = []
-    auditioning.value = null
     loopResolved.value = false
     loopPoint.value = -1
     savedSessionId.value = null
@@ -77,18 +75,12 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   function setCandidates(newCandidates: Cluster[]) {
     candidates.value = newCandidates
-    auditioning.value = null
-  }
-
-  function audition(cluster: Cluster) {
-    auditioning.value = cluster
   }
 
   function confirm(cluster: Cluster) {
     redoStack.value = []  // new branch clears redo history
     sequence.value.push(sortCluster(cluster))
     candidates.value = []
-    auditioning.value = null
   }
 
   function undo() {
@@ -96,7 +88,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     const popped = sequence.value.pop()!
     redoStack.value.push(popped)
     candidates.value = []
-    auditioning.value = null
     loopResolved.value = false
   }
 
@@ -105,7 +96,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     const cluster = redoStack.value.pop()!
     sequence.value.push(cluster)
     candidates.value = []
-    auditioning.value = null
   }
 
   // Returns whether an octave shift is possible in the given direction
@@ -123,7 +113,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     const lastIdx = sequence.value.length - 1
     sequence.value[lastIdx] = shifted
     candidates.value = []
-    auditioning.value = null
   }
 
   function editClusterAt(index: number, newCluster: Cluster, bounds?: { min: number; max: number }) {
@@ -140,7 +129,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     arr.splice(to, 0, moved)
     sequence.value = arr
     candidates.value = []
-    auditioning.value = null
   }
 
   function deleteAt(index: number) {
@@ -148,7 +136,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     if (index === 0 && sequence.value.length === 1) return
     sequence.value.splice(index, 1)
     candidates.value = []
-    auditioning.value = null
   }
 
   function setLoopResolved(resolved: boolean, point: number = -1) {
@@ -164,7 +151,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     sequence.value = []
     redoStack.value = []
     candidates.value = []
-    auditioning.value = null
     loopResolved.value = false
     loopPoint.value = -1
     savedSessionId.value = null
@@ -173,7 +159,6 @@ export const useSequenceStore = defineStore('sequence', () => {
   return {
     sequence,
     candidates,
-    auditioning,
     loopResolved,
     loopPoint,
     savedSessionId,
@@ -184,7 +169,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     start,
     randomStart,
     setCandidates,
-    audition,
     confirm,
     undo,
     redo,

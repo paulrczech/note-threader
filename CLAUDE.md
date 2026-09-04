@@ -72,7 +72,7 @@ A minimal music utility for voice leading guided by oblique strategies. Users mo
 - "another" (strategy redraw button)
 - "the drift" (strategy card section label)
 - "streams — tap to hear" (candidates section label)
-- "current" (current cluster section label)
+- "now" (current cluster section label — last confirmed move, tap to hear, always fixed regardless of stream audition)
 - "the flow" (sequence history section label)
 - "a loop has formed — N moves" (loop resolved banner)
 - "+12" / "−12" (octave transpose)
