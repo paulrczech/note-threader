@@ -24,38 +24,38 @@
      in practice once padding is included */
   --tap-min: 2.75rem; /* 44px */
 
-  /* Voice colors */
-  --voice-1: #639094;   /* muted blue      — bottom voice */
-  --voice-2: #7b9c6f;   /* sage green      — middle voice */
-  --voice-3: #b8885c;   /* warm brown      — top voice    */
-  --voice-4: #8aa36a;   /* olive           — fourth voice */
+  /* Voice colors — "New Moon": night water, moon governs the tide, not the sun */
+  --voice-1: #4a6478;   /* slate blue      — bottom voice */
+  --voice-2: #3a6b64;   /* deep muted teal — middle voice */
+  --voice-3: #5c4f68;   /* midnight plum   — top voice    */
+  --voice-4: #a5a2ba;   /* lavender-silver — fourth voice, a glow not a spark */
 
-  /* Surfaces — dark forest palette */
-  --color-bg:             #151814;
-  --color-surface:        #1a201a;
-  --color-surface-2:      #212820;
-  --color-border:         #2a3327;
-  --color-border-subtle:  rgba(155, 166, 151, 0.15);
+  /* Surfaces — deep, cool-cast, near-black */
+  --color-bg:             #0a0d11;
+  --color-surface:        #0f141a;
+  --color-surface-2:      #141a21;
+  --color-border:         #1c2530;
+  --color-border-subtle:  rgba(140, 150, 170, 0.15);
 
   /* Text */
-  --color-text:        #e6dec8;   /* warm off-white */
-  --color-text-dim:    #8f9888;   /* muted sage-grey */
-  --color-text-muted:  #4a5847;   /* very muted */
+  --color-text:        #e6dec8;   /* warm off-white — held fixed, the one warm note left */
+  --color-text-dim:    #7d8590;   /* cool slate-grey */
+  --color-text-muted:  #38404a;   /* very muted, cool */
 
   /* Accent */
-  --color-accent:      #536948;   /* active sage green */
-  --color-accent-warm: #b8885c;   /* warm brown — secondary */
+  --color-accent:      #454a68;   /* indigo-slate — receptive, not active */
+  --color-accent-warm: #4f5a72;   /* secondary, still cool — no warm accent in this palette */
 
   /* Ionic overrides */
   --ion-background-color:             var(--color-bg);
-  --ion-background-color-rgb:         21, 24, 20;
+  --ion-background-color-rgb:         10, 13, 17;
   --ion-text-color:                   var(--color-text);
   --ion-text-color-rgb:               230, 222, 200;
   --ion-color-primary:                var(--color-accent);
-  --ion-color-primary-rgb:            83, 105, 72;
+  --ion-color-primary-rgb:            69, 74, 104;
   --ion-color-primary-contrast:       #e6dec8;
-  --ion-color-primary-shade:          #3d5036;
-  --ion-color-primary-tint:           #6d8562;
+  --ion-color-primary-shade:          #3a3e59;
+  --ion-color-primary-tint:           #595d79;
   --ion-toolbar-background:           var(--color-bg);
   --ion-toolbar-border-color:         var(--color-border);
   --ion-item-background:              var(--color-surface);
@@ -76,8 +76,8 @@ ion-content {
 ion-app {
   background-color: var(--color-bg);
   background-image:
-    radial-gradient(circle at 15% 10%, rgba(55, 70, 50, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 85% 90%, rgba(90, 70, 50, 0.08) 0%, transparent 45%);
+    radial-gradient(circle at 15% 10%, rgba(60, 55, 90, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(50, 65, 80, 0.08) 0%, transparent 45%);
 }
 
 ion-toolbar {

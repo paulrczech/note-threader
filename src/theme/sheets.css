@@ -61,6 +61,6 @@
 .option-btn:hover { background: rgba(255, 255, 255, 0.03); }
 .option-btn.active {
   color: var(--voice-1);
-  background: rgba(99, 144, 148, 0.1);
+  background: rgba(74, 100, 120, 0.1);
   border-left: 2px solid var(--voice-1);
 }
