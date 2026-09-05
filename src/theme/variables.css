@@ -6,6 +6,24 @@
   --font-mono:  'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
+  /* Type scale — 8 semantic steps; every font-size in the app should reference one of these */
+  --text-label: 0.65rem;  /* micro-labels, index numbers, tiny meta */
+  --text-xs:    0.72rem;  /* compact controls, secondary meta */
+  --text-sm:    0.85rem;  /* supporting/data text, hint copy */
+  --text-base:  0.95rem;  /* primary interactive/body text */
+  --text-md:    1.1rem;   /* sheet titles, sub-headings */
+  --text-lg:    1.25rem;  /* section/page headings */
+  --text-xl:    2rem;     /* modal display heading */
+  --text-2xl:   3.2rem;   /* hero title */
+
+  /* Icon glyph sizes (for icon-only buttons, not text) */
+  --icon-sm: 1rem;     /* compact icon buttons */
+  --icon-md: 1.15rem;  /* toolbar/footer icon buttons */
+
+  /* Minimum interactive hit target — iOS HIG floor, also satisfies Android's 48dp
+     in practice once padding is included */
+  --tap-min: 2.75rem; /* 44px */
+
   /* Voice colors */
   --voice-1: #639094;   /* muted blue      — bottom voice */
   --voice-2: #7b9c6f;   /* sage green      — middle voice */
@@ -69,7 +87,7 @@ ion-toolbar {
 
 /* Section label — used across session view and components */
 .section-label {
-  font-size: 0.65rem;
+  font-size: var(--text-label);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-text-dim);
@@ -80,7 +98,7 @@ ion-toolbar {
 .btn-primary {
   width: 100%;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: 1rem; /* deliberately not a --text-* token — single already-good CTA size, not part of the scale */
   letter-spacing: 0.05em;
   padding: 1rem;
   cursor: pointer;
@@ -93,4 +111,49 @@ ion-toolbar {
 }
 .btn-primary:hover {
   opacity: 0.88;
+}
+
+/* ion-alert — no shadow DOM in this build, so plain class selectors apply directly.
+   Verified against the rendered light-DOM structure (@ionic/vue 8): .alert-wrapper >
+   .alert-head > .alert-title, .alert-message, .alert-button-group > .alert-button
+   (+ .alert-button-role-cancel / .alert-button-role-destructive modifiers).
+   Two things confirmed by inspecting the live DOM/matched CSS rules, not assumed:
+   1. Ionic's own internal rules are scoped as e.g. `.alert-wrapper.sc-ion-alert-md`
+      (two classes) — that scoping class is MODE-SPECIFIC (sc-ion-alert-md vs
+      sc-ion-alert-ios), so chaining onto it here would silently drop these rules in
+      iOS mode. Background uses the --background custom property Ionic's own rule
+      already reads (mirrors the ion-content/ion-toolbar pattern above), which is
+      mode-independent; border/color need !important to beat that 2-class specificity
+      without depending on a mode-specific class name (same !important pattern already
+      used for the picker-modal override elsewhere in this app).
+   2. font-family/font-style on .alert-title needed no !important — Ionic's own rule
+      doesn't set those properties at all, so ours wins on inheritance alone.
+   3. The --background custom property (the ion-content/ion-toolbar pattern used
+      elsewhere in this file) did NOT reliably win here — Ionic appears to set its own
+      mode-scoped default for that same variable at higher specificity, so background
+      needs the same !important treatment as border below rather than the cleaner
+      custom-property route. Confirmed by testing both modes directly, not assumed. */
+.alert-wrapper {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+}
+.alert-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  color: var(--color-text);
+}
+.alert-message {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-text-dim);
+}
+.alert-button {
+  color: var(--color-accent) !important;
+  font-family: var(--font-sans);
+  text-transform: none;
+}
+.alert-button-role-destructive {
+  color: #e07878 !important;
 }

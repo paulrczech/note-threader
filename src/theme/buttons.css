@@ -1,0 +1,111 @@
+/* Eddy — Shared button primitives
+   Two more live in variables.css: .btn-primary (filled CTA) and .option-btn (list rows,
+   defined in sheets.css). These three cover everything else. Compose the shared class
+   alongside a component-scoped class in the template — the shared class owns the box
+   model/color/touch-target, the scoped class owns only what's genuinely unique to that
+   instance (e.g. an .active fill color, a circular shape).
+   Import in main.ts. Keep component-specific styling scoped. */
+
+/* Bordered, transparent — standalone secondary actions (multi-select toggle, export,
+   modal close). Fills/tints on hover or .active. */
+.btn-outline {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-dim);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  min-height: var(--tap-min);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.btn-outline:hover {
+  border-color: var(--color-text-dim);
+  color: var(--color-text);
+}
+.btn-outline.active {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+  background: var(--color-accent);
+}
+
+/* Borderless, tinted — toolbar/nav icons and in-content icon-only affordances. Visible
+   glyph stays small (--icon-sm/--icon-md); the box is always padded to the tap-target
+   floor regardless, per iOS/Material convention for bar-button and icon-button items. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-dim);
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  font-size: var(--icon-md);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.icon-btn:hover:not(:disabled) {
+  color: var(--color-text);
+}
+.icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Bordered square, fixed 48px box — in-content control-cluster icons (transport,
+   tempo stepper, arpeggio-direction toggles). These read as a segmented/toggle
+   control, not nav chrome, so a visible border is the correct convention here. */
+.btn-icon-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-dim);
+  width: 3rem;
+  height: 3rem;
+  font-size: var(--icon-md);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.btn-icon-outline:hover:not(:disabled) {
+  border-color: var(--color-text-dim);
+  color: var(--color-text);
+}
+.btn-icon-outline:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Partial-border glyph button pinned to a list row's edge (source-reset, session-delete)
+   — layout only; each consumer still picks its own semantic icon. Add .destructive for
+   the red delete-hover treatment. */
+.row-edge-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-left: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  width: 2.8rem;
+  align-self: stretch;
+  font-size: var(--icon-md);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.row-edge-btn:hover {
+  color: var(--color-text-dim);
+  background: rgba(255, 255, 255, 0.03);
+}
+.row-edge-btn.destructive:hover {
+  color: #e07878;
+  background: rgba(224, 120, 120, 0.08);
+}

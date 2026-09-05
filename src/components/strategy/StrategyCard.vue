@@ -3,8 +3,12 @@
     <p class="section-label">the drift</p>
     <div class="strategy-card">
       <p class="strategy-text">{{ strategy.text }}</p>
-      <button class="hint-btn" aria-label="What does this mean?" @click="hintOpen = true">ⓘ</button>
-      <button class="icon-btn" @click="$emit('redraw')" aria-label="another">↺</button>
+      <button class="icon-btn hint-btn" aria-label="What does this mean?" @click="hintOpen = true">
+        <IonIcon :icon="informationCircleOutline" />
+      </button>
+      <button class="icon-btn redraw-btn" @click="$emit('redraw')" aria-label="another">
+        <IonIcon :icon="refreshOutline" />
+      </button>
     </div>
 
     <IonModal
@@ -26,7 +30,8 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
-  import { IonModal } from '@ionic/vue'
+  import { IonModal, IonIcon } from '@ionic/vue'
+  import { informationCircleOutline, refreshOutline } from 'ionicons/icons'
   import type { Strategy } from '../../data/strategies'
 
   defineProps<{ strategy: Strategy }>()
@@ -53,7 +58,7 @@
 
   .strategy-text {
     font-family: var(--font-serif);
-    font-size: 0.95rem;
+    font-size: var(--text-base);
     font-weight: 300;
     font-style: italic;
     color: var(--color-text);
@@ -65,31 +70,17 @@
     text-overflow: ellipsis;
   }
 
-  .hint-btn {
-    background: none;
-    border: none;
-    font-size: 0.85rem;
-    color: var(--color-text-dim);
-    cursor: pointer;
-    padding: 0;
+  /* .icon-btn (box model, touch target) comes from theme/buttons.css — these two
+     modifiers only set the compact in-content glyph size and hover tint */
+  .hint-btn,
+  .redraw-btn {
+    font-size: var(--icon-sm);
     flex-shrink: 0;
-    line-height: 1;
-    transition: color 0.15s;
   }
-  .hint-btn:hover { color: var(--color-accent); }
-
-  .icon-btn {
-    background: none;
-    border: none;
-    font-size: 1rem;
-    color: var(--color-text-dim);
-    cursor: pointer;
-    padding: 0;
-    flex-shrink: 0;
-    line-height: 1;
-    transition: color 0.15s;
+  .hint-btn:hover,
+  .redraw-btn:hover {
+    color: var(--color-accent);
   }
-  .icon-btn:hover { color: var(--color-accent); }
 
   .hint-sheet {
     padding: 1.5rem 1.5rem 2.5rem;
@@ -97,7 +88,7 @@
 
   .hint-title {
     font-family: var(--font-serif);
-    font-size: 1.2rem;
+    font-size: var(--text-lg);
     font-weight: 300;
     font-style: italic;
     color: var(--color-text);
@@ -106,14 +97,14 @@
   }
 
   .hint-text {
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--color-text-dim);
     margin: 0 0 0.6rem;
   }
 
   .hint-lock {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--color-accent);
     margin: 0;
     font-style: italic;

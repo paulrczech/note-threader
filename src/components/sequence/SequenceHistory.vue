@@ -26,10 +26,10 @@
               :style="{ color: voiceColors[v] }"
             >{{ midiToName(midi) }}</span>
             <div class="row-actions">
-              <button class="action-btn" @click.stop="startEdit(cluster, i)" title="edit notes">
+              <button class="icon-btn action-btn" @click.stop="startEdit(cluster, i)" title="edit notes">
                 <IonIcon :icon="createOutline" />
               </button>
-              <button class="action-btn delete-btn" @click.stop="confirmDelete(i)" title="delete">
+              <button class="icon-btn action-btn delete-btn" @click.stop="confirmDelete(i)" title="delete">
                 <IonIcon :icon="trashOutline" />
               </button>
             </div>
@@ -42,6 +42,7 @@
   <!-- Edit picker modal -->
   <IonModal
     :is-open="pickerOpen"
+    class="picker-modal"
     style="
       --height: 284px;
       --width: 100vw;
@@ -250,7 +251,7 @@ function confirmDelete(index: number) {
 }
 
 .entry-index {
-  font-size: 0.65rem;
+  font-size: var(--text-label);
   color: var(--color-text-dim);
   width: 1.4rem;
   text-align: right;
@@ -259,7 +260,7 @@ function confirmDelete(index: number) {
 }
 
 .entry-note {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-family: var(--font-mono);
   letter-spacing: 0.04em;
 }
@@ -279,28 +280,19 @@ function confirmDelete(index: number) {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 0.1rem;
   flex-shrink: 0;
 }
 
+/* .icon-btn (box model, touch target) comes from theme/buttons.css — action-btn only
+   sets the compact in-content glyph size and hover tint */
 .action-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-dim);
-  font-size: 0.95rem;
-  cursor: pointer;
-  padding: 0.2rem 0.25rem;
-  line-height: 1;
-  border-radius: 4px;
-  transition: color 0.15s;
-  display: flex;
-  align-items: center;
+  font-size: var(--icon-sm);
 }
 .action-btn:hover { color: var(--color-accent); }
 .action-btn.delete-btn:hover { color: #e07878; }
 
 .edit-error {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   color: #e07878;
   text-align: center;
   padding: 0.4rem 1rem 0;

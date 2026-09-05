@@ -8,7 +8,9 @@
       @didDismiss="showContinuePrompt = false" />
 
     <ion-content class="ion-padding" fullscreen>
-      <button class="about-btn" @click="showAbout = true">?</button>
+      <button class="icon-btn about-btn" @click="showAbout = true">
+        <IonIcon :icon="helpCircleOutline" />
+      </button>
       <AboutModal :is-open="showAbout" @close="showAbout = false" />
 
       <div class="home-layout">
@@ -19,29 +21,29 @@
         </div>
 
         <!-- Trigger rows -->
-        <div class="secondary-block">
+        <div class="option-list secondary-block">
           <!-- The current (settings) -->
-          <button class="trigger-row" @click="settingsOpen = true">
+          <button class="option-btn trigger-row" @click="settingsOpen = true">
             <span class="trigger-label">the current</span>
             <span class="trigger-value"
               >{{ voiceCount }}v · {{ movementLabel }} ·
               {{ instrumentLabel }}</span
             >
-            <span class="trigger-arrow">›</span>
+            <ion-icon class="trigger-arrow" :icon="chevronForwardOutline" />
           </button>
 
           <!-- Past flows (saved sessions) -->
-          <button class="trigger-row" @click="openSessions">
+          <button class="option-btn trigger-row" @click="openSessions">
             <span class="trigger-label">past flows</span>
             <span class="trigger-value">{{
               sessionCount > 0 ? sessionCount : 'none'
             }}</span>
-            <span class="trigger-arrow">›</span>
+            <ion-icon class="trigger-arrow" :icon="chevronForwardOutline" />
           </button>
 
           <!-- The source (starting notes) -->
           <div class="trigger-row trigger-row--source">
-            <button class="source-main" @click="openPicker">
+            <button class="option-btn source-main" @click="openPicker">
               <span class="trigger-label">the source</span>
               <span
                 class="trigger-value"
@@ -60,14 +62,14 @@
                   <span class="trigger-hint-sub">tap to choose</span>
                 </template>
               </span>
-              <span v-if="!showManual" class="trigger-arrow">›</span>
+              <ion-icon v-if="!showManual" class="trigger-arrow" :icon="chevronForwardOutline" />
             </button>
             <button
               v-if="showManual"
-              class="source-reset"
+              class="row-edge-btn"
               @click="resetToRandom"
               title="reset to random">
-              ×
+              <ion-icon :icon="closeOutline" />
             </button>
           </div>
         </div>
@@ -161,7 +163,7 @@
 
     <!-- Note picker modal -->
     <IonModal
-      id="note-picker-modal"
+      class="picker-modal"
       :is-open="pickerOpen"
       style="
         --height: 244px;
@@ -233,7 +235,7 @@
     IonToast,
     IonAlert,
   } from '@ionic/vue'
-  import { playOutline } from 'ionicons/icons'
+  import { playOutline, helpCircleOutline, closeOutline, chevronForwardOutline } from 'ionicons/icons'
   import AboutModal from '../components/ui/AboutModal.vue'
   import SavedSessions from '../components/ui/SavedSessions.vue'
   import type { SavedSession } from '../utils/sessionStorage'
@@ -468,27 +470,20 @@
 </script>
 
 <style scoped>
+  /* .icon-btn (touch target, borderless base) comes from theme/buttons.css — about-btn
+     adds the border/circle/position that make it read as a standalone floating
+     affordance rather than toolbar chrome */
   .about-btn {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background: none;
     border: 1px solid var(--color-border);
     border-radius: 50%;
-    color: var(--color-text-dim);
-    width: 1.8rem;
-    height: 1.8rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-    font-family: inherit;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
+    font-size: var(--icon-sm);
     z-index: 10;
   }
   .about-btn:hover {
     border-color: var(--color-text-dim);
-    color: var(--color-text);
   }
 
   .home-layout {
@@ -507,7 +502,7 @@
 
   .app-title {
     font-family: var(--font-serif);
-    font-size: 3.2rem;
+    font-size: var(--text-2xl);
     font-weight: 300;
     letter-spacing: 0.08em;
     color: var(--color-text);
@@ -516,7 +511,7 @@
 
   .app-tagline {
     font-family: var(--font-serif);
-    font-size: 0.95rem;
+    font-size: var(--text-base);
     font-style: italic;
     font-weight: 300;
     letter-spacing: 0.06em;
@@ -524,44 +519,22 @@
     margin: 0;
   }
 
-  /* Trigger rows */
-  .secondary-block {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
+  /* Trigger rows — .option-list/.option-btn (box model, touch target) come from
+     sheets.css; these rules only set the 3-column label/value/arrow content layout
+     that's unique to this row shape */
   .trigger-row {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.95rem 1rem;
-    background: var(--color-surface);
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.15s;
-    width: 100%;
-    text-align: left;
-    min-height: 52px;
-  }
-  .trigger-row:hover {
-    background: rgba(255, 255, 255, 0.03);
-  }
-  .trigger-row + .trigger-row {
-    border-top: 1px solid var(--color-border);
   }
 
-  /* Source row — split into main action + reset button */
+  /* Source row — split into main action + reset button. Not itself an .option-btn
+     (it wraps two separate buttons), so it doesn't pick up option-list's automatic
+     .option-btn + .option-btn divider — add the same border explicitly. */
   .trigger-row--source {
+    display: flex;
     padding: 0;
-    cursor: default;
-  }
-  .trigger-row--source:hover {
-    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
   }
 
   .source-main {
@@ -569,42 +542,13 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.95rem 1rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    text-align: left;
-    min-height: 52px;
     min-width: 0;
-    transition: background 0.15s;
-  }
-  .source-main:hover {
-    background: rgba(255, 255, 255, 0.03);
   }
 
-  .source-reset {
-    background: none;
-    border: none;
-    border-left: 1px solid var(--color-border);
-    color: var(--color-text-muted);
-    width: 2.8rem;
-    align-self: stretch;
-    font-size: 1.1rem;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition:
-      color 0.15s,
-      background 0.15s;
-    font-family: inherit;
-  }
-  .source-reset:hover {
-    color: var(--color-text-dim);
-    background: rgba(255, 255, 255, 0.03);
-  }
+  /* .row-edge-btn (box model, touch target) comes from theme/buttons.css */
 
   .trigger-label {
-    font-size: 0.62rem;
+    font-size: var(--text-label);
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--color-text-dim);
@@ -614,7 +558,7 @@
   }
 
   .trigger-value {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--color-text);
     font-family: var(--font-mono);
     flex: 1;
@@ -629,13 +573,13 @@
   }
 
   .trigger-hint-main {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--color-text);
     font-family: var(--font-mono);
   }
 
   .trigger-hint-sub {
-    font-size: 0.62rem;
+    font-size: var(--text-label);
     color: var(--color-text-dim);
     letter-spacing: 0.08em;
     font-family: inherit;
@@ -643,7 +587,7 @@
   }
 
   .trigger-arrow {
-    font-size: 0.9rem;
+    font-size: var(--icon-sm);
     color: var(--color-text-dim);
     flex-shrink: 0;
   }
@@ -655,7 +599,7 @@
 
   .preview-note {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     letter-spacing: 0.04em;
   }
   .preview-note + .preview-note::before {
@@ -670,59 +614,11 @@
   }
 
   .error-msg {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: #e07878;
     margin: 0;
     text-align: center;
   }
 
   /* Settings sheet — HomeView-specific */
-</style>
-
-<!-- Global picker overrides — scoped styles can't reach shadow DOM -->
-<style>
-  ion-picker {
-    --background: var(--color-bg);
-  }
-  ion-modal#note-picker-modal {
-    --max-width: 360px;
-    margin-left: -4px;
-  }
-  ion-modal#note-picker-modal ion-button {
-    --color: var(--color-accent);
-  }
-  ion-modal#note-picker-modal ion-button::part(native) {
-    text-transform: none;
-    font-family: var(--font-sans);
-    font-size: 0.95rem;
-  }
-  ion-picker::part(backdrop) {
-    opacity: 0.5;
-  }
-  .picker-before,
-  .picker-after {
-    opacity: 0.6 !important;
-    background: linear-gradient(
-      to bottom,
-      rgba(
-          var(
-            --fade-background-rgb,
-            var(--background-rgb, var(--ion-background-color-rgb))
-          ),
-          1
-        )
-        20%,
-      rgba(
-          var(
-            --fade-background-rgb,
-            var(--background-rgb, var(--ion-background-color-rgb))
-          ),
-          0.6
-        )
-        100%
-    ) !important;
-  }
-  ion-picker ion-picker-column-option.option-selected {
-    font-weight: 500;
-  }
 </style>

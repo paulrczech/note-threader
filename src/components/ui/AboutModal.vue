@@ -27,7 +27,7 @@
           </p>
         </div>
 
-        <button class="close-btn" @click="$emit('close')">close</button>
+        <button class="btn-outline close-btn" @click="$emit('close')">close</button>
       </div>
     </ion-content>
   </ion-modal>
@@ -56,7 +56,7 @@
 
   .about-title {
     font-family: var(--font-serif);
-    font-size: 2rem;
+    font-size: var(--text-xl);
     font-weight: 300;
     letter-spacing: 0.08em;
     color: var(--color-text);
@@ -65,7 +65,7 @@
 
   .about-sub {
     font-family: var(--font-serif);
-    font-size: 0.95rem;
+    font-size: var(--text-base);
     font-weight: 300;
     letter-spacing: 0.06em;
     color: var(--color-text-dim);
@@ -81,7 +81,7 @@
 
   .about-body p {
     font-family: var(--font-sans);
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     line-height: 1.7;
     color: var(--color-text);
     margin: 0;
@@ -92,23 +92,9 @@
     color: var(--color-accent);
   }
 
+  /* .btn-outline (box model, touch target) comes from theme/buttons.css */
   .close-btn {
     align-self: center;
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    color: var(--color-text-dim);
-    font-size: 0.75rem;
     letter-spacing: 0.12em;
-    padding: 0.45rem 1.2rem;
-    cursor: pointer;
-    font-family: inherit;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
-  }
-  .close-btn:hover {
-    border-color: var(--color-text-dim);
-    color: var(--color-text);
   }
 </style>

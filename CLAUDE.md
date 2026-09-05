@@ -35,7 +35,6 @@ A minimal music utility for voice leading guided by oblique strategies. Users mo
 - `src/components/cluster/ClusterDisplay.vue`
 - `src/components/strategy/StrategyCard.vue` — IonPopover hint, "another" button
 - `src/components/sequence/SequenceHistory.vue` — swipe-to-delete, inline note editing, playing row highlight
-- `src/components/playback/PlaybackControls.vue` — loop/stop/play-once + octave +12/−12 buttons
 - `src/components/ui/SavedSessions.vue` — inline name editing (tap name), load via metadata area
 - `src/components/ui/AboutModal.vue`
 - `src/router/index.ts` — /home, /session

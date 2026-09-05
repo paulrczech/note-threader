@@ -6,7 +6,7 @@
       <div v-if="sessions.length === 0" class="empty-msg">
         no saved flows yet
       </div>
-      <div v-else class="session-list">
+      <div v-else class="option-list session-list">
         <div v-for="s in sessions" :key="s.id" class="session-row">
           <!-- Name edit input -->
           <input
@@ -24,15 +24,18 @@
 
           <!-- Normal row -->
           <template v-else>
-            <button class="session-load-btn" @click="$emit('load', s)">
+            <button class="option-btn session-load-btn" @click="$emit('load', s)">
               <span class="session-name" @click.stop="startRename(s)">{{
                 s.name
               }}</span>
-              <span class="session-meta"
-                >{{ s.sequence.length }} clusters · {{ s.voiceCount }}v ›</span
-              >
+              <span class="session-meta">
+                {{ s.sequence.length }} clusters · {{ s.voiceCount }}v
+                <ion-icon :icon="chevronForwardOutline" />
+              </span>
             </button>
-            <button class="session-delete" @click="remove(s.id)">×</button>
+            <button class="row-edge-btn destructive" @click="remove(s.id)">
+              <ion-icon :icon="trashOutline" />
+            </button>
           </template>
         </div>
       </div>
@@ -42,6 +45,8 @@
 
 <script setup lang="ts">
   import { ref, onMounted, nextTick } from 'vue'
+  import { IonIcon } from '@ionic/vue'
+  import { chevronForwardOutline, trashOutline } from 'ionicons/icons'
   import {
     listSessions,
     deleteSession,
@@ -49,7 +54,7 @@
     type SavedSession,
   } from '../../utils/sessionStorage'
 
-  const emit = defineEmits<{ load: [session: SavedSession] }>()
+  defineEmits<{ load: [session: SavedSession] }>()
 
   const sessions = ref<SavedSession[]>([])
   const editingId = ref<string | null>(null)
@@ -97,53 +102,39 @@
   }
 
   .empty-msg {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--color-text-dim);
     font-style: italic;
     padding: 1rem 0;
   }
 
-  .session-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-  }
-
+  /* .option-list (box model) comes from sheets.css — session-row is a plain wrapper
+     around two separate buttons (load + delete), so it keeps its own flex layout and
+     divider rather than being an .option-btn itself */
   .session-row {
     display: flex;
     align-items: center;
-    background: var(--color-surface);
-    border: none;
     min-height: 48px;
   }
   .session-row + .session-row {
     border-top: 1px solid var(--color-border);
   }
 
+  /* .option-btn (box model, touch target) comes from sheets.css */
   .session-load-btn {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: none;
-    border: none;
-    padding: 0.85rem 1rem;
-    cursor: pointer;
-    font-family: inherit;
     min-width: 0;
     gap: 0.5rem;
-    text-align: left;
-    min-height: 48px;
   }
   .session-load-btn:hover .session-name {
     color: var(--voice-1);
   }
 
   .session-name {
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     color: var(--color-text);
     white-space: nowrap;
     overflow: hidden;
@@ -160,7 +151,7 @@
     border: none;
     outline: none;
     color: var(--color-text);
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     font-family: inherit;
     padding: 0.85rem 1rem;
     min-width: 0;
@@ -168,7 +159,10 @@
   }
 
   .session-meta {
-    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    font-size: var(--text-xs);
     color: var(--color-text-dim);
     font-family: var(--font-mono);
     flex-shrink: 0;
@@ -178,23 +172,5 @@
     color: var(--voice-1);
   }
 
-  .session-delete {
-    background: none;
-    border: none;
-    border-left: 1px solid var(--color-border);
-    color: var(--color-text-dim);
-    width: 2.8rem;
-    align-self: stretch;
-    font-size: 1rem;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition:
-      color 0.15s,
-      background 0.15s;
-    font-family: inherit;
-  }
-  .session-delete:hover {
-    color: #e07878;
-    background: rgba(224, 120, 120, 0.08);
-  }
+  /* .row-edge-btn (box model, touch target) comes from theme/buttons.css */
 </style>

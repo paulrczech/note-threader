@@ -1,0 +1,53 @@
+/* Eddy — Shared note-picker overrides
+   ion-picker/ion-button render in shadow DOM, so scoped component styles can't reach
+   them — these need ::part()/custom-property overrides from global CSS instead (unlike
+   ion-alert, which is light-DOM — see the ion-alert block in variables.css).
+   Targets any picker modal carrying class="picker-modal": HomeView's starting-notes
+   picker and SequenceHistory's edit-cluster picker both use it, so both get identical
+   styling instead of only whichever one happened to have a hardcoded id.
+   Import in main.ts. */
+
+ion-picker {
+  --background: var(--color-bg);
+}
+ion-modal.picker-modal {
+  --max-width: 360px;
+  margin-left: -4px;
+}
+ion-modal.picker-modal ion-button {
+  --color: var(--color-accent);
+}
+ion-modal.picker-modal ion-button::part(native) {
+  text-transform: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+}
+ion-picker::part(backdrop) {
+  opacity: 0.5;
+}
+.picker-before,
+.picker-after {
+  opacity: 0.6 !important;
+  background: linear-gradient(
+    to bottom,
+    rgba(
+        var(
+          --fade-background-rgb,
+          var(--background-rgb, var(--ion-background-color-rgb))
+        ),
+        1
+      )
+      20%,
+    rgba(
+        var(
+          --fade-background-rgb,
+          var(--background-rgb, var(--ion-background-color-rgb))
+        ),
+        0.6
+      )
+      100%
+  ) !important;
+}
+ion-picker ion-picker-column-option.option-selected {
+  font-weight: 500;
+}

@@ -3,34 +3,30 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <button class="back-to-home nav-btn" @click="goHome">
+          <button class="back-to-home" @click="goHome">
             <ion-icon :icon="arrowBack" /> new
           </button>
         </ion-buttons>
         <ion-title class="session-title">eddy</ion-title>
         <ion-buttons slot="end">
           <button
-            class="nav-btn save-btn icon-btn"
+            class="icon-btn save-btn"
             :class="{ flashed: savedFlash }"
             :disabled="sequenceStore.sequence.length < 1"
             @click="save"
             title="save session">
-            <span
-              v-if="savedFlash"
-              style="font-size: 0.7rem; letter-spacing: 0.08em"
-              >saved</span
-            >
+            <span v-if="savedFlash" class="saved-flash-label">saved</span>
             <ion-icon v-else :icon="saveIcon" />
           </button>
           <button
-            class="nav-btn icon-btn"
+            class="icon-btn"
             :disabled="!sequenceStore.canUndo"
             @click="goUndo"
             title="undo">
             <ion-icon :icon="arrowUndoIcon" />
           </button>
           <button
-            class="nav-btn icon-btn"
+            class="icon-btn"
             :disabled="!sequenceStore.canRedo"
             @click="goRedo"
             title="redo">
@@ -83,7 +79,7 @@
           <div class="candidates-header">
             <p class="section-label">streams — tap to hear</p>
             <button
-              class="multi-toggle"
+              class="btn-outline multi-toggle"
               :class="{ active: multiSelect }"
               @click="toggleMultiSelect">
               multi
@@ -156,14 +152,14 @@
     <ion-footer class="playback-footer">
         <div class="footer-bar">
           <button
-            class="footer-icon-btn play-stop"
+            class="btn-icon-outline play-stop"
             :class="{ playing: isPlaying }"
             :disabled="sequenceStore.sequence.length < 1"
             @click="isPlaying ? audioEngine.stopLoop() : handlePlay()">
             <ion-icon :icon="isPlaying ? stopOutline : playOutline" />
           </button>
           <button
-            class="footer-icon-btn loop-toggle"
+            class="btn-icon-outline loop-toggle"
             :class="{ active: loopActive }"
             @click="toggleLoop">
             <ion-icon :icon="infiniteOutline" />
@@ -181,7 +177,7 @@
             <ion-select-option value="guitar-nylon">guitar (ny)</ion-select-option>
           </ion-select>
           <button
-            class="footer-expand-btn"
+            class="icon-btn footer-expand-btn"
             :class="{ open: footerExpanded }"
             @click="footerExpanded = !footerExpanded">
             <ion-icon
@@ -196,18 +192,18 @@
                 <button
                   v-for="d in directionOptions"
                   :key="d.value"
-                  class="toggle-btn"
+                  class="btn-icon-outline toggle-btn"
                   :class="{ active: settingsStore.arpeggioDirection === d.value }"
                   @click="settingsStore.setArpeggioDirection(d.value as any)">
                   <ion-icon :icon="d.icon" />
                 </button>
               </div>
               <div class="tempo-control">
-                <button class="adj-btn" @click="adjustTempo(-5)">
+                <button class="btn-icon-outline adj-btn" @click="adjustTempo(-5)">
                   <ion-icon :icon="removeOutline" />
                 </button>
                 <span class="tempo-value">{{ settingsStore.tempo }}</span>
-                <button class="adj-btn" @click="adjustTempo(5)">
+                <button class="btn-icon-outline adj-btn" @click="adjustTempo(5)">
                   <ion-icon :icon="addOutline" />
                 </button>
                 <span class="tempo-unit">bpm</span>
@@ -233,7 +229,7 @@
               <button
                 v-for="(step, i) in SUBDIVISION_STEPS"
                 :key="step.label"
-                class="subdivision-label-btn"
+                class="icon-btn subdivision-label-btn"
                 :title="step.label"
                 @click="settingsStore.setSubdivision(step.value)">
                 <NoteGlyph :type="step.glyph" :active="i === subdivisionIndex" />
@@ -243,8 +239,10 @@
             <div
               v-if="sequenceStore.sequence.length > 1"
               class="tray-row export-row">
-              <button class="export-btn" @click="exportMidi">↓ midi</button>
-              <button class="export-btn" @click="copyText">
+              <button class="btn-outline export-btn" @click="exportMidi">
+                <ion-icon :icon="downloadOutline" /> midi
+              </button>
+              <button class="btn-outline export-btn" @click="copyText">
                 {{ copiedFlash ? 'copied!' : 'copy text' }}
               </button>
             </div>
@@ -289,6 +287,7 @@
     chevronDownOutline,
     addOutline,
     removeOutline,
+    downloadOutline,
   } from 'ionicons/icons'
 
   import ClusterDisplay from '../components/cluster/ClusterDisplay.vue'
@@ -686,45 +685,41 @@
 
   .session-title {
     font-family: var(--font-serif);
-    font-size: 1.25rem;
+    font-size: var(--text-lg);
     font-weight: 300;
     letter-spacing: 0.12em;
     text-align: center;
     color: var(--color-text-dim);
   }
 
-  .nav-btn {
+  /* .icon-btn (box model, touch target) comes from theme/buttons.css — back-to-home
+     is icon+text rather than icon-only, so it keeps its own layout, just adding the
+     same tap-target floor rather than composing the icon-only shared class */
+  .back-to-home {
     background: none;
     border: none;
     color: var(--color-text-dim);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     letter-spacing: 0.08em;
     cursor: pointer;
     padding: 0 0.4rem;
     font-family: inherit;
     transition: color 0.15s;
-    &.back-to-home {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-weight: 500;
-    }
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 500;
+    min-height: var(--tap-min);
   }
-  .nav-btn:hover:not(:disabled) {
+  .back-to-home:hover {
     color: var(--color-text);
-  }
-  .nav-btn:disabled {
-    opacity: 0.3;
-    cursor: default;
   }
   .save-btn.flashed {
     color: var(--color-accent);
   }
-  .icon-btn {
-    font-size: 1.15rem;
-    padding: 0 0.3rem;
-    display: inline-flex;
-    align-items: center;
+  .saved-flash-label {
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
   }
 
   .current-cluster-block {
@@ -751,7 +746,7 @@
     border-radius: 10px;
     padding: 0.8rem 1rem;
     font-family: var(--font-serif);
-    font-size: 1.1rem;
+    font-size: var(--text-md);
     font-weight: 300;
     font-style: italic;
     color: var(--color-accent);
@@ -771,7 +766,7 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border-subtle);
     border-radius: 10px;
-    min-height: 2.75rem;
+    min-height: var(--tap-min);
     padding: 0.65rem 1rem;
     cursor: pointer;
     transition:
@@ -798,14 +793,14 @@
     border-radius: 50%;
     background: var(--color-accent);
     color: #e6dec8;
-    font-size: 0.6rem;
+    font-size: var(--text-label);
     font-weight: 600;
     flex-shrink: 0;
     font-family: inherit;
   }
 
   .pill-note {
-    font-size: 0.95rem;
+    font-size: var(--text-base);
     font-family: var(--font-mono);
     letter-spacing: 0.04em;
   }
@@ -816,7 +811,7 @@
   }
 
   .no-candidates {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     color: var(--color-text-dim);
     font-style: italic;
   }
@@ -826,7 +821,7 @@
     color: var(--color-accent);
     font-size: inherit;
     cursor: pointer;
-    padding: 0;
+    padding: 0.2rem 0;
     font-family: inherit;
     text-decoration: underline;
   }
@@ -844,58 +839,23 @@
     padding: 1rem;
   }
 
-  .footer-icon-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    color: var(--color-text-dim);
-    width: 2.75rem;
-    height: 2.75rem;
-    font-size: 1.25rem;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition:
-      border-color 0.15s,
-      color 0.15s,
-      background 0.15s;
-  }
-  .footer-icon-btn:disabled {
-    opacity: 0.3;
-    cursor: default;
-  }
-  .footer-icon-btn.play-stop:not(:disabled):hover,
-  .footer-icon-btn.play-stop.playing {
+  /* .btn-icon-outline (box model, touch target) comes from theme/buttons.css —
+     play-stop/loop-toggle only add their accent-tinted state treatments */
+  .play-stop:not(:disabled):hover,
+  .play-stop.playing {
     border-color: var(--color-accent);
     color: var(--color-accent);
   }
-  .footer-icon-btn.loop-toggle.active {
+  .loop-toggle.active {
     border-color: var(--color-accent);
     color: var(--color-accent);
-    background: rgba(224, 168, 124, 0.1);
-  }
-  .footer-icon-btn.loop-toggle:not(.active):hover {
-    border-color: var(--color-text-dim);
-    color: var(--color-text);
+    background: rgba(83, 105, 72, 0.15);
   }
 
+  /* .icon-btn (box model, touch target) comes from theme/buttons.css */
   .footer-expand-btn {
     margin-left: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--color-text-dim);
-    font-size: 1.1rem;
-    cursor: pointer;
-    width: 2.75rem;
-    height: 2.75rem;
-    transition: color 0.15s;
   }
-  .footer-expand-btn:hover,
   .footer-expand-btn.open {
     color: var(--color-text);
   }
@@ -955,11 +915,11 @@
     border: 1px solid var(--color-border);
     border-radius: 6px;
     color: var(--color-text-dim);
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     font-family: inherit;
     cursor: pointer;
     flex: 1;
-    min-height: 2.75rem;
+    min-height: var(--tap-min);
     padding: 0 1rem;
     &::part(inner) {
       width: 100%;
@@ -973,29 +933,11 @@
     gap: 0.3rem;
   }
 
-  .adj-btn {
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    color: var(--color-text-dim);
-    width: 2.25rem;
-    height: 2.25rem;
-    font-size: 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
-  }
-  .adj-btn:hover {
-    border-color: var(--color-text-dim);
-    color: var(--color-text);
-  }
+  /* .adj-btn's box model (border, touch target) comes from theme/buttons.css'
+     .btn-icon-outline — nothing unique left to style here */
 
   .tempo-value {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     font-family: var(--font-mono);
     color: var(--color-text);
     min-width: 2.2rem;
@@ -1003,7 +945,7 @@
   }
 
   .tempo-unit {
-    font-size: 0.62rem;
+    font-size: var(--text-label);
     letter-spacing: 0.1em;
     color: var(--color-text-dim);
   }
@@ -1013,13 +955,13 @@
   }
 
   .tray-label {
-    font-size: 0.65rem;
+    font-size: var(--text-label);
     letter-spacing: 0.12em;
     color: var(--color-text-dim);
   }
 
   .subdivision-current {
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     font-family: var(--font-mono);
     color: var(--color-text);
   }
@@ -1042,12 +984,9 @@
     margin-top: -0.3rem;
   }
 
+  /* .icon-btn (box model, touch target) comes from theme/buttons.css — align-items
+     is the one unique need: aligns glyphs of different heights to a common baseline */
   .subdivision-label-btn {
-    background: none;
-    border: none;
-    padding: 0.3rem;
-    cursor: pointer;
-    display: flex;
     align-items: flex-end;
   }
 
@@ -1056,23 +995,8 @@
     gap: 0.3rem;
   }
 
-  .toggle-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    color: var(--color-text-dim);
-    width: 2.25rem;
-    height: 2.25rem;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition:
-      border-color 0.15s,
-      color 0.15s,
-      background 0.15s;
-  }
+  /* .toggle-btn's box model (border, touch target) comes from theme/buttons.css'
+     .btn-icon-outline — only .active (below) is unique to this instance */
   .candidates-header {
     display: flex;
     align-items: center;
@@ -1084,38 +1008,16 @@
     margin-bottom: 0;
   }
 
+  /* .btn-outline (box model, touch target) comes from theme/buttons.css */
   .multi-toggle {
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    color: var(--color-text-dim);
     letter-spacing: 0.12em;
-    padding: .5rem 1rem;
-    font-size: .65rem;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-  }
-  .multi-toggle.active {
-    border-color: var(--color-accent);
-    color: white;
-    background: var(--color-accent);
   }
 
   .export-btn {
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    color: var(--color-text-dim);
-    font-size: 0.72rem;
     letter-spacing: 0.1em;
-    min-height: 2.25rem;
-    padding: 0.4rem 0.85rem;
-    cursor: pointer;
-    font-family: inherit;
-    transition:
-      border-color 0.15s,
-      color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
   }
   .export-btn:hover {
     border-color: var(--color-accent);

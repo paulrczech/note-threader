@@ -54,7 +54,7 @@
 
   .note-label {
     font-family: var(--font-serif);
-    font-size: 1.3rem;
+    font-size: var(--text-lg);
     font-weight: 300;
     letter-spacing: 0.06em;
     line-height: 1;
