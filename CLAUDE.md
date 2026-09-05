@@ -6,7 +6,7 @@ A minimal music utility for voice leading guided by oblique strategies. Users mo
 
 ## Stack
 
-- Vue 3 `<script setup>`, Ionic, Pinia, Tone.js (Salamander Grand Piano samples via CDN), @tonejs/midi
+- Vue 3 `<script setup>`, Ionic, Pinia, Tone.js (instrument samples self-hosted in `public/samples/` — see CREDITS.md), @tonejs/midi
 - Capacitor deferred to V2
 - No backend — all client-side
 

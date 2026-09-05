@@ -4,8 +4,10 @@ import type { Cluster } from '../utils/noteUtils'
 import { midiToName, MIDI_MIN, MIDI_MAX } from '../data/notes'
 import type { InstrumentType, Subdivision } from '../stores/settingsStore'
 
-// Salamander Grand Piano samples hosted on Tone.js CDN
-const SALAMANDER_BASE = 'https://tonejs.github.io/audio/salamander/'
+// Salamander Grand Piano samples (Alexander Holm, CC-BY 3.0) — self-hosted locally rather
+// than fetched from tonejs.github.io, so playback doesn't depend on a third party's uptime.
+// See CREDITS.md for full attribution.
+const SALAMANDER_BASE = '/samples/piano/'
 const SALAMANDER_URLS: Record<string, string> = {
   'A0':  'A0.mp3',  'C1':  'C1.mp3',  'D#1': 'Ds1.mp3', 'F#1': 'Fs1.mp3',
   'A1':  'A1.mp3',  'C2':  'C2.mp3',  'D#2': 'Ds2.mp3', 'F#2': 'Fs2.mp3',
@@ -15,7 +17,9 @@ const SALAMANDER_URLS: Record<string, string> = {
   'A5':  'A5.mp3',  'C6':  'C6.mp3',
 }
 
-const NBROSOWSKY_BASE = 'https://nbrosowsky.github.io/tonejs-instruments/samples/'
+// Harp/guitar samples (nbrosowsky/tonejs-instruments, CC-BY 3.0) — self-hosted locally for
+// the same reason as the piano above. See CREDITS.md for full attribution.
+const NBROSOWSKY_BASE = '/samples/'
 
 // Harp samples from nbrosowsky/tonejs-instruments
 const HARP_BASE = NBROSOWSKY_BASE + 'harp/'

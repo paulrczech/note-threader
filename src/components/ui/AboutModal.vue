@@ -27,6 +27,11 @@
           </p>
         </div>
 
+        <p class="about-credits">
+          Piano samples: Salamander Grand Piano by Alexander Holm. Harp and guitar
+          samples via nbrosowsky/tonejs-instruments. All CC-BY 3.0 — see CREDITS.md.
+        </p>
+
         <button class="btn-outline close-btn" @click="$emit('close')">close</button>
       </div>
     </ion-content>
@@ -90,6 +95,15 @@
   .about-body em {
     font-style: italic;
     color: var(--color-accent);
+  }
+
+  .about-credits {
+    font-family: var(--font-sans);
+    font-size: var(--text-label);
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    text-align: center;
+    margin: 0;
   }
 
   /* .btn-outline (box model, touch target) comes from theme/buttons.css */
