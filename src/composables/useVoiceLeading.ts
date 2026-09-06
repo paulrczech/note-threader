@@ -24,12 +24,32 @@ function intervalBounds(movementType: string): { min: number; max: number } {
     case 'half':              return { min: 1, max: 1 }
     case 'whole':             return { min: 2, max: 2 }
     case 'step':              return { min: 1, max: 2 }
+    case 'group-step':        return { min: 1, max: 2 }
+    case 'group-shift':       return { min: 1, max: 3 }  // half step, whole step, minor third
+    case 'parallel-quality':  return { min: 1, max: 2 }
     case 'third':             return { min: 1, max: 4 }
     case 'tritone':           return { min: 6, max: 6 }
     case 'chromatic-approach':return { min: 1, max: 1 }
     case 'free':              return { min: 1, max: 7 }
+    // 'power' allows 0 (a voice already on the root/fifth pitch class can stay) up to a
+    // full octave — a small step often lands exactly on an already-occupied voice (e.g.
+    // C-E-G: E's nearest root/fifth notes are the existing C and G themselves), and the
+    // duplicate-note constraint then rejects every combination; a full octave's reach
+    // reliably finds a free root/fifth slot instead. See generatePowerChordCandidates.
+    case 'power':             return { min: 0, max: 12 }
     default:                  return { min: 1, max: 2 }
   }
+}
+
+// Quality bucket used only to resolve "parallel" (same root, opposite major/minor
+// quality) for parallel-mode — Eddy's other scales don't have one canonical parallel,
+// so they're bucketed to whichever binary quality they read closest to.
+const MINOR_QUALITY_SCALES = new Set([
+  'minor', 'dorian', 'phrygian', 'locrian', 'harmonic_minor', 'pentatonic_minor',
+])
+
+function parallelScaleId(scaleId: string): string {
+  return MINOR_QUALITY_SCALES.has(scaleId) ? 'major' : 'minor'
 }
 
 // Determine which voice indices are allowed to move given the strategy rule
@@ -109,24 +129,84 @@ function generateSingleVoiceCandidates(
   return candidates
 }
 
-// Generate candidates where all voices move in the same direction (up or down)
+// Generate candidates where all voices move together by the same interval, in the same
+// direction — cluster shape is preserved, just transposed. One candidate per (interval
+// size, direction) pair, so a movementType with a range (e.g. 'group-shift', half step
+// through minor third) offers a few shift sizes rather than just one.
 function generateAllVoiceSameDirection(
   cluster: Cluster,
   strategy: Strategy,
   allowedNotes: Set<number> | undefined,
   bounds: { min: number; max: number }
 ): Cluster[] {
-  const { min } = intervalBounds(strategy.movementType)
-  const step = min  // use min interval for uniform movement
+  const { min, max } = intervalBounds(strategy.movementType)
   const candidates: Cluster[] = []
 
-  for (const dir of [1, -1]) {
-    const newCluster = cluster.map(note => note + dir * step)
+  for (let step = min; step <= max; step++) {
+    for (const dir of [1, -1]) {
+      const newCluster = cluster.map(note => note + dir * step)
+      const sorted = sortCluster(newCluster)
+      if (isValidCluster(sorted, bounds)) {
+        if (!allowedNotes || newCluster.every(n => allowedNotes.has(n))) {
+          candidates.push(sorted)
+        }
+      }
+    }
+  }
+  return candidates
+}
+
+// Generate candidates where every voice moves independently by step — no voice held,
+// no shared interval (contrast with generateAllVoiceSameDirection, which forces one
+// uniform interval so the cluster's shape is preserved). Each voice picks its own
+// reachable target within `allowedNotes`, if given.
+function generateAllVoicesIndependentCandidates(
+  cluster: Cluster,
+  strategy: Strategy,
+  allowedNotes: Set<number> | undefined,
+  bounds: { min: number; max: number }
+): Cluster[] {
+  const { min, max } = intervalBounds(strategy.movementType)
+  const targetSets = cluster.map(note => reachableNotes(note, min, max, allowedNotes, bounds))
+  const combos = cartesianProduct(targetSets)
+
+  const candidates: Cluster[] = []
+  for (const combo of combos) {
+    const sorted = sortCluster(combo)
+    if (isValidCluster(sorted, bounds)) {
+      candidates.push(sorted)
+    }
+  }
+  return candidates
+}
+
+// Generate candidates that collapse the cluster toward root + fifth (power-chord special
+// case). The bass voice is treated as the root and held fixed; every voice above it
+// independently steps to the nearest note whose pitch class matches the root or the
+// fifth above it.
+function generatePowerChordCandidates(cluster: Cluster, bounds: { min: number; max: number }): Cluster[] {
+  const { min, max } = intervalBounds('power')
+  const root = cluster[0]
+  const rootPc = root % 12
+  const fifthPc = (rootPc + 7) % 12
+
+  const targetNotes = new Set<number>()
+  for (let midi = bounds.min; midi <= bounds.max; midi++) {
+    const pc = midi % 12
+    if (pc === rootPc || pc === fifthPc) targetNotes.add(midi)
+  }
+
+  const movingIndices = cluster.map((_, i) => i).slice(1)
+  const targetSets = movingIndices.map(idx => reachableNotes(cluster[idx], min, max, targetNotes, bounds))
+  const combos = cartesianProduct(targetSets)
+
+  const candidates: Cluster[] = []
+  for (const combo of combos) {
+    const newCluster = [...cluster]
+    movingIndices.forEach((voiceIdx, i) => { newCluster[voiceIdx] = combo[i] })
     const sorted = sortCluster(newCluster)
     if (isValidCluster(sorted, bounds)) {
-      if (!allowedNotes || newCluster.every(n => allowedNotes.has(n))) {
-        candidates.push(sorted)
-      }
+      candidates.push(sorted)
     }
   }
   return candidates
@@ -196,7 +276,7 @@ export function generateCandidates(
   }
 
   // Widen the global range just enough to cover the current cluster's own register —
-  // otherwise a session started outside [MIDI_MIN, MIDI_MAX] (piano/harp's wider picker
+  // otherwise a session started outside [MIDI_MIN, MIDI_MAX] (piano's wider picker
   // range) strands every voice with zero reachable notes. Reduces to the plain global
   // range whenever the cluster is already inside it, so ordinary sessions are unaffected.
   const bounds = {
@@ -209,9 +289,23 @@ export function generateCandidates(
 
   switch (strategy.voicesAllowedToMove) {
     case 'all':
-      if (strategy.movementType === 'half' || strategy.movementType === 'whole') {
-        // all-voices-same-direction (e.g. "move every voice by half step")
+      if (strategy.movementType === 'half' || strategy.movementType === 'whole' || strategy.movementType === 'group-shift') {
+        // uniform interval, same for every voice — shape preserved, just transposed
         candidates = generateAllVoiceSameDirection(cluster, strategy, allowedNotes, bounds)
+      } else if (strategy.movementType === 'group-step') {
+        // every voice moves independently by step, filtered to the current scale (the
+        // relative major/minor of a diatonic mode shares the exact same notes, so no
+        // separate scale lookup is needed — see relative-shift in strategies.ts)
+        candidates = generateAllVoicesIndependentCandidates(cluster, strategy, allowedNotes, bounds)
+      } else if (strategy.movementType === 'parallel-quality') {
+        // every voice moves independently by step, filtered to the PARALLEL scale
+        // (same root, opposite major/minor quality) rather than the current one
+        const parallelNotes = options.keyRoot !== undefined
+          ? new Set(getScaleNotes(options.keyRoot, parallelScaleId(options.scaleId ?? 'major'), bounds.min, bounds.max))
+          : undefined
+        candidates = generateAllVoicesIndependentCandidates(cluster, strategy, parallelNotes, bounds)
+      } else if (strategy.movementType === 'power') {
+        candidates = generatePowerChordCandidates(cluster, bounds)
       } else {
         candidates = generateSingleVoiceCandidates(cluster, strategy, allowedNotes, bounds)
       }

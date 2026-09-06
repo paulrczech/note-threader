@@ -27,6 +27,12 @@
 //   'tritone'      — exactly 6 semitones
 //   'same-root-new-quality' — root stays, other voices find new positions
 //   'power'        — collapse to root + fifth only (special case)
+//   'group-shift'  — all voices move by the same interval (half step to minor third), same
+//                    direction — shape preserved, just transposed (voicesAllowedToMove: 'all' only)
+//   'group-step'   — every voice moves independently by step, filtered to the current
+//                    scale (voicesAllowedToMove: 'all' only)
+//   'parallel-quality' — every voice moves independently by step, filtered to the
+//                    parallel major/minor of the current key (voicesAllowedToMove: 'all' only)
 
 export interface Strategy {
   id: string
@@ -99,13 +105,13 @@ export const STRATEGIES: Strategy[] = [
   },
   {
     id: 'all-half-same-direction',
-    text: 'Move every voice by a half step in the same direction',
-    hint: 'All voices slide one semitone together — either all up or all down. The cluster shape is preserved, just transposed.',
+    text: 'Move every voice together, by the same small interval',
+    hint: 'All voices slide together by the same amount — a half step, whole step, or minor third — either all up or all down. The cluster shape is preserved, just transposed.',
     voicesAllowedToMove: 'all',
-    movementType: 'half',
+    movementType: 'group-shift',
     direction: 'any',
     requiresKeyLock: false,
-    notes: 'All voices move up together OR all down together. Generate both options.',
+    notes: 'All voices move by the same interval (half step, whole step, or minor third), either all up or all down. Generate every step-size x direction combination.',
   },
   {
     id: 'hold-bass',
@@ -121,10 +127,10 @@ export const STRATEGIES: Strategy[] = [
     text: 'Borrow from the parallel',
     hint: 'Voices shift toward notes found in the parallel major or minor of your active key. Requires Key Lock to be on.',
     voicesAllowedToMove: 'all',
-    movementType: 'step',
+    movementType: 'parallel-quality',
     direction: 'any',
     requiresKeyLock: true,
-    notes: 'Shift voices toward the parallel major/minor of the current key lock. Requires Key Lock.',
+    notes: 'Each voice independently steps toward the nearest note in the parallel major/minor (same root, opposite major/minor quality) of the current key. Requires Key Lock.',
   },
   {
     id: 'drop-the-third',
@@ -200,10 +206,10 @@ export const STRATEGIES: Strategy[] = [
     text: 'What would the relative do?',
     hint: 'Voices step toward the relative major or minor — same key signature, different tonal center. Requires Key Lock.',
     voicesAllowedToMove: 'all',
-    movementType: 'step',
+    movementType: 'group-step',
     direction: 'any',
     requiresKeyLock: true,
-    notes: 'Shift voices toward the relative major/minor. Requires Key Lock.',
+    notes: 'Each voice independently steps within the current scale — the relative major/minor shares the exact same notes as the current key, just a different felt tonal center, so no separate scale lookup is needed. Requires Key Lock.',
   },
   {
     id: 'power-chord',
@@ -213,7 +219,7 @@ export const STRATEGIES: Strategy[] = [
     movementType: 'power',
     direction: 'any',
     requiresKeyLock: false,
-    notes: 'Collapse cluster toward root + fifth. Special case — not a standard interval move.',
+    notes: 'Bass voice held as root; every voice above it independently steps to the nearest note whose pitch class is the root or the fifth above it. Special case — not a standard interval move.',
   },
   {
     id: 'chromatic-approach',
