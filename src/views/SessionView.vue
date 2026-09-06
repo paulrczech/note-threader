@@ -172,9 +172,10 @@
               settingsStore.setInstrument(($event as CustomEvent).detail.value)
             ">
             <ion-select-option value="piano">piano</ion-select-option>
-            <ion-select-option value="harp">harp</ion-select-option>
-            <ion-select-option value="guitar-acoustic">guitar (ac)</ion-select-option>
-            <ion-select-option value="guitar-nylon">guitar (ny)</ion-select-option>
+            <ion-select-option value="electric-piano">e-piano</ion-select-option>
+            <ion-select-option value="guitar-acoustic">guitar</ion-select-option>
+            <ion-select-option value="electric-guitar">e-guitar</ion-select-option>
+            <ion-select-option value="holdsworthian-pad">pad</ion-select-option>
           </ion-select>
           <button
             class="icon-btn footer-expand-btn"

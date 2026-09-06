@@ -17,20 +17,9 @@ const SALAMANDER_URLS: Record<string, string> = {
   'A5':  'A5.mp3',  'C6':  'C6.mp3',
 }
 
-// Harp/guitar samples (nbrosowsky/tonejs-instruments, CC-BY 3.0) — self-hosted locally for
+// Guitar samples (nbrosowsky/tonejs-instruments, CC-BY 3.0) — self-hosted locally for
 // the same reason as the piano above. See CREDITS.md for full attribution.
 const NBROSOWSKY_BASE = '/samples/'
-
-// Harp samples from nbrosowsky/tonejs-instruments
-const HARP_BASE = NBROSOWSKY_BASE + 'harp/'
-const HARP_URLS: Record<string, string> = {
-  'C3': 'C3.mp3', 'E3': 'E3.mp3', 'G3': 'G3.mp3', 'B3': 'B3.mp3',
-  'C5': 'C5.mp3', 'E5': 'E5.mp3', 'G5': 'G5.mp3', 'B5': 'B5.mp3',
-  'D2': 'D2.mp3', 'D4': 'D4.mp3', 'D6': 'D6.mp3',
-  'F2': 'F2.mp3', 'F4': 'F4.mp3', 'F6': 'F6.mp3',
-  'A2': 'A2.mp3', 'A4': 'A4.mp3', 'A6': 'A6.mp3',
-  'E1': 'E1.mp3', 'G1': 'G1.mp3', 'B1': 'B1.mp3',
-}
 
 const GUITAR_ACOUSTIC_URLS: Record<string, string> = {
   'A2': 'A2.mp3',  'A3': 'A3.mp3',  'A4': 'A4.mp3',
@@ -47,17 +36,36 @@ const GUITAR_ACOUSTIC_URLS: Record<string, string> = {
   'G#2': 'Gs2.mp3', 'G#3': 'Gs3.mp3', 'G#4': 'Gs4.mp3',
 }
 
-const GUITAR_NYLON_URLS: Record<string, string> = {
-  'A2': 'A2.mp3',  'A3': 'A3.mp3',  'A4': 'A4.mp3',  'A5': 'A5.mp3',
-  'A#5': 'As5.mp3',
-  'B1': 'B1.mp3',  'B2': 'B2.mp3',  'B3': 'B3.mp3',  'B4': 'B4.mp3',
-  'C#3': 'Cs3.mp3', 'C#4': 'Cs4.mp3', 'C#5': 'Cs5.mp3',
-  'D2': 'D2.mp3',  'D3': 'D3.mp3',  'D5': 'D5.mp3',
-  'D#4': 'Ds4.mp3',
-  'E2': 'E2.mp3',  'E3': 'E3.mp3',  'E4': 'E4.mp3',  'E5': 'E5.mp3',
-  'F#2': 'Fs2.mp3', 'F#3': 'Fs3.mp3', 'F#4': 'Fs4.mp3', 'F#5': 'Fs5.mp3',
-  'G3': 'G3.mp3',  'G5': 'G5.mp3',
-  'G#2': 'Gs2.mp3', 'G#4': 'Gs4.mp3', 'G#5': 'Gs5.mp3',
+// Electric piano and electric guitar samples via Pianobook.co.uk (royalty-free per
+// Pianobook's standard license). See CREDITS.md for full attribution.
+
+// Electric piano — 26 notes, whole-tone spacing A1-C6, "mf" dynamic layer. A1-D2 are a
+// short run of extra low notes (matching the standard piano's A1 floor) below the
+// otherwise-consistent E2-C6 whole-tone ladder.
+const ELECTRIC_PIANO_URLS: Record<string, string> = {
+  'A1': 'A1.mp3', 'C2': 'C2.mp3', 'D2': 'D2.mp3',
+  'E2': 'E2.mp3', 'F#2': 'Fs2.mp3', 'G#2': 'Gs2.mp3', 'A#2': 'As2.mp3',
+  'C3': 'C3.mp3', 'D3': 'D3.mp3', 'E3': 'E3.mp3', 'F#3': 'Fs3.mp3', 'G#3': 'Gs3.mp3', 'A#3': 'As3.mp3',
+  'C4': 'C4.mp3', 'D4': 'D4.mp3', 'E4': 'E4.mp3', 'F#4': 'Fs4.mp3', 'G#4': 'Gs4.mp3', 'A#4': 'As4.mp3',
+  'C5': 'C5.mp3', 'D5': 'D5.mp3', 'E5': 'E5.mp3', 'F#5': 'Fs5.mp3', 'G#5': 'Gs5.mp3', 'A#5': 'As5.mp3',
+  'C6': 'C6.mp3',
+}
+
+// Electric guitar (sustained "LONG_MODERN" swell articulation, not plucked) — 12 root
+// notes, minor-3rd spacing, D2-B4. Loud velocity layer, trimmed from the pack's raw
+// 14-31s samples down to 7s with a fade-out (Eddy never sustains a note that long).
+const ELECTRIC_GUITAR_URLS: Record<string, string> = {
+  'D2': 'D2.mp3', 'F2': 'F2.mp3', 'G#2': 'Gs2.mp3', 'B2': 'B2.mp3',
+  'D3': 'D3.mp3', 'F3': 'F3.mp3', 'G#3': 'Gs3.mp3', 'B3': 'B3.mp3',
+  'D4': 'D4.mp3', 'F4': 'F4.mp3', 'G#4': 'Gs4.mp3', 'B4': 'B4.mp3',
+}
+
+// Holdsworthian pad ("Blackhole Guitars" by JWB) — sparse, every fifth (7 semitones),
+// E2-A#5. Louder "LOUDNR.1" variant. Three low roots (C0/G0/D1) exist in the source but
+// sit far below Eddy's usable range and were skipped. See CREDITS.md for full attribution.
+const HOLDSWORTHIAN_PAD_URLS: Record<string, string> = {
+  'E2': 'E2.mp3', 'B2': 'B2.mp3', 'F#3': 'Fs3.mp3', 'C#4': 'Cs4.mp3',
+  'G#4': 'Gs4.mp3', 'D#5': 'Ds5.mp3', 'A#5': 'As5.mp3',
 }
 
 // Note-picker range per instrument — picker-only, matches each instrument's natural/sampled
@@ -66,9 +74,10 @@ const GUITAR_NYLON_URLS: Record<string, string> = {
 // moves are reachable — only what you can type in as a starting cluster.
 export const INSTRUMENT_NOTE_RANGE: Record<InstrumentType, { min: number; max: number }> = {
   piano:            { min: 33,       max: MIDI_MAX }, // A1–C6
-  harp:             { min: 36,       max: 88 },       // C2–E6
   'guitar-acoustic': { min: MIDI_MIN, max: MIDI_MAX },
-  'guitar-nylon':    { min: MIDI_MIN, max: MIDI_MAX },
+  'electric-piano':  { min: 33,       max: 84 },       // A1-C6
+  'electric-guitar': { min: 38,       max: 71 },       // D2-B4
+  'holdsworthian-pad': { min: 40,     max: 82 },       // E2-A#5
 }
 
 const LOOP_GAP_BEATS = 1
@@ -85,9 +94,22 @@ export interface PlaybackSettings {
 // Fixed note durations for plucky/percussive instruments
 const NOTE_DURATIONS: Partial<Record<InstrumentType, string>> = {
   piano:            '2n',
-  harp:             '2n',
   'guitar-acoustic':'2n',
-  'guitar-nylon':   '2n',
+  'electric-piano': '2n', // struck/decaying, same character class as piano
+  'electric-guitar':'1n', // sustained swell articulation, needs room to show
+  'holdsworthian-pad':'1n', // sustained pad character
+}
+
+// Tone.Sampler's release (the fade-out after triggerRelease) defaults to 0.1s — fine for
+// a struck/plucked note, but a hard, audible cutoff for anything sustained. The pad-style
+// instruments above get a real fade instead.
+const RELEASE_TIMES: Partial<Record<InstrumentType, number>> = {
+  'electric-guitar': 2.5,
+  'holdsworthian-pad': 2.5,
+}
+
+function noteRelease(instrumentType: InstrumentType): number {
+  return RELEASE_TIMES[instrumentType] ?? 0.1
 }
 
 function noteDuration(): string {
@@ -153,9 +175,10 @@ async function init(instrumentType: InstrumentType = 'piano'): Promise<void> {
 
   const SAMPLER_CONFIGS: Record<InstrumentType, { urls: Record<string, string>; baseUrl: string }> = {
     piano:            { urls: SALAMANDER_URLS,      baseUrl: SALAMANDER_BASE },
-    harp:             { urls: HARP_URLS,            baseUrl: HARP_BASE },
     'guitar-acoustic':{ urls: GUITAR_ACOUSTIC_URLS, baseUrl: NBROSOWSKY_BASE + 'guitar-acoustic/' },
-    'guitar-nylon':   { urls: GUITAR_NYLON_URLS,    baseUrl: NBROSOWSKY_BASE + 'guitar-nylon/' },
+    'electric-piano': { urls: ELECTRIC_PIANO_URLS,  baseUrl: '/samples/electric-piano/' },
+    'electric-guitar':{ urls: ELECTRIC_GUITAR_URLS, baseUrl: '/samples/electric-guitar/' },
+    'holdsworthian-pad':{ urls: HOLDSWORTHIAN_PAD_URLS, baseUrl: '/samples/holdsworthian-pad/' },
   }
 
   // Guards against stale instrument values from old saved sessions/defaults
@@ -165,6 +188,7 @@ async function init(instrumentType: InstrumentType = 'piano'): Promise<void> {
     instrument = new Tone.Sampler({
       urls,
       baseUrl,
+      release: noteRelease(instrumentType),
       onload: () => {
         isLoaded.value = true
         loadError.value = null

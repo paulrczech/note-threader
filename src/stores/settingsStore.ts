@@ -6,7 +6,8 @@ export type MovementSize = 'half' | 'step' | 'whole' | 'third' | 'free'
 export type KeyLockMode = 'free' | 'diatonic' | 'modal'
 export type LoopMode = 'auto' | 'manual' | 'capped'
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
-export type InstrumentType = 'piano' | 'harp' | 'guitar-acoustic' | 'guitar-nylon'
+export type InstrumentType =
+  | 'piano' | 'guitar-acoustic' | 'electric-piano' | 'electric-guitar' | 'holdsworthian-pad'
 // Arpeggio note grid, in notes per beat — 0.5 = half, 1 = quarter, 2 = 8th,
 // 3 = triplet, 4 = 16th. Shared by live playback (useAudioEngine) and MIDI
 // export (midiUtils) so they always match.
@@ -29,7 +30,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const loopMode = ref<LoopMode>('auto')
   const maxMoves = ref<number>(32)   // cap for 'capped' loop mode
   const arpeggioDirection = ref<ArpeggioDirection>('up')
-  const instrument = ref<InstrumentType>('harp')
+  const instrument = ref<InstrumentType>('piano')
   const tempo = ref<number>(80)      // BPM
   const subdivision = ref<Subdivision>(4)  // 16th notes
 

@@ -267,9 +267,10 @@
 
   const instrumentOptions = [
     { label: 'piano', value: 'piano' },
-    { label: 'harp', value: 'harp' },
-    { label: 'guitar (acoustic)', value: 'guitar-acoustic' },
-    { label: 'guitar (nylon)', value: 'guitar-nylon' },
+    { label: 'electric piano', value: 'electric-piano' },
+    { label: 'acoustic guitar', value: 'guitar-acoustic' },
+    { label: 'electric guitar', value: 'electric-guitar' },
+    { label: 'holdsworthian pad', value: 'holdsworthian-pad' },
   ]
 
   const router = useRouter()

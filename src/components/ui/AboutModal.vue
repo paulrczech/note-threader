@@ -28,8 +28,9 @@
         </div>
 
         <p class="about-credits">
-          Piano samples: Salamander Grand Piano by Alexander Holm. Harp and guitar
-          samples via nbrosowsky/tonejs-instruments. All CC-BY 3.0 — see CREDITS.md.
+          Piano samples: Salamander Grand Piano by Alexander Holm. Guitar samples via
+          nbrosowsky/tonejs-instruments (CC-BY 3.0). Electric piano and electric guitar
+          via Pianobook.co.uk. Holdsworthian pad: Blackhole Guitars by JWB. See CREDITS.md.
         </p>
 
         <button class="btn-outline close-btn" @click="$emit('close')">close</button>

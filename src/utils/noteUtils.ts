@@ -61,7 +61,7 @@ export function mostDissonantVoiceIndex(cluster: Cluster): number {
 
 // Generate all notes reachable from a MIDI note within [minInterval, maxInterval] semitones.
 // `bounds` defaults to the global MIDI_MIN/MAX; callers operating on a cluster that already
-// sits outside that window (e.g. a piano/harp session started below E2) should widen it so
+// sits outside that window (e.g. a piano session started below E2) should widen it so
 // movement isn't stranded — see generateCandidates in useVoiceLeading.ts.
 export function reachableNotes(
   fromMidi: number,
