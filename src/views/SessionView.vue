@@ -155,7 +155,7 @@
             class="btn-icon-outline play-stop"
             :class="{ playing: isPlaying }"
             :disabled="sequenceStore.sequence.length < 1"
-            @click="isPlaying ? audioEngine.stopLoop() : handlePlay()">
+            @click="isPlaying ? audioEngine.stopLoop(true) : handlePlay()">
             <ion-icon :icon="isPlaying ? stopOutline : playOutline" />
           </button>
           <button
@@ -353,21 +353,30 @@
   watch(
     () => settingsStore.arpeggioDirection,
     () => {
-      if (isPlaying.value) playLoop()
+      if (isPlaying.value) {
+        audioEngine.stopLoop(true)
+        playLoop()
+      }
     }
   )
 
   watch(
     () => settingsStore.tempo,
     () => {
-      if (isPlaying.value) playLoop()
+      if (isPlaying.value) {
+        audioEngine.stopLoop(true)
+        playLoop()
+      }
     }
   )
 
   watch(
     () => settingsStore.subdivision,
     () => {
-      if (isPlaying.value) playLoop()
+      if (isPlaying.value) {
+        audioEngine.stopLoop(true)
+        playLoop()
+      }
     }
   )
 
@@ -419,7 +428,7 @@
   })
 
   onUnmounted(() => {
-    audioEngine.stopLoop()
+    audioEngine.stopLoop(true)
   })
 
   function advance() {
@@ -507,14 +516,14 @@
   }
 
   function goUndo() {
-    audioEngine.stopLoop()
+    audioEngine.stopLoop(true)
     sequenceStore.undo()
     sequenceStore.setLoopResolved(false)
     advance()
   }
 
   function goRedo() {
-    audioEngine.stopLoop()
+    audioEngine.stopLoop(true)
     sequenceStore.redo()
     sequenceStore.setLoopResolved(false)
     advance()
@@ -531,7 +540,7 @@
   }
 
   function confirmGoHome() {
-    audioEngine.stopLoop()
+    audioEngine.stopLoop(true)
     sequenceStore.reset()
     resetDeck()
     router.push('/')
@@ -576,7 +585,7 @@
   }
 
   function deleteCluster(index: number) {
-    audioEngine.stopLoop()
+    audioEngine.stopLoop(true)
     sequenceStore.deleteAt(index)
     sequenceStore.setLoopResolved(false)
   }
@@ -592,7 +601,7 @@
   }
 
   function reorderClusters(from: number, to: number) {
-    audioEngine.stopLoop()
+    audioEngine.stopLoop(true)
     sequenceStore.reorderSequence(from, to)
     sequenceStore.setLoopResolved(false)
     advance()

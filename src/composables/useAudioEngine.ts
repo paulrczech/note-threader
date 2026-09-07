@@ -308,7 +308,15 @@ function playSequence(
   rafId = requestAnimationFrame(tick)
 }
 
-function stopLoop(): void {
+// Stopping the Transport only stops SCHEDULING new notes — any note already triggered
+// keeps ringing out its full release. Tone.Sampler bakes the release fade into each
+// buffer source at trigger time, so changing `release` afterward can't shorten a note
+// that's already sounding. A hard stop instead briefly mutes the shared output, which
+// silences whatever's still ringing regardless of its baked-in release, then restores
+// volume immediately after so it's ready for whatever plays next.
+const HARD_STOP_MUTE_TIME = 0.015
+
+function stopLoop(hardStop = false): void {
   if (rafId !== null) {
     cancelAnimationFrame(rafId)
     rafId = null
@@ -324,6 +332,12 @@ function stopLoop(): void {
   transport.position = 0
   isPlaying.value = false
   playingIndex.value = -1
+
+  if (hardStop && instrument) {
+    const now = Tone.now()
+    instrument.volume.rampTo(-Infinity, HARD_STOP_MUTE_TIME, now)
+    instrument.volume.rampTo(0, 0.001, now + HARD_STOP_MUTE_TIME)
+  }
 }
 
 function dispose(): void {
