@@ -256,6 +256,7 @@ function confirmDelete(index: number) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  width: 100%;
   min-height: 2.75rem;
   padding: 0.35rem 0.5rem;
   border-radius: 6px;
