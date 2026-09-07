@@ -11,12 +11,10 @@
         <ion-buttons slot="end">
           <button
             class="icon-btn save-btn"
-            :class="{ flashed: savedFlash }"
             :disabled="sequenceStore.sequence.length < 1"
             @click="save"
             title="save session">
-            <span v-if="savedFlash" class="saved-flash-label">saved</span>
-            <ion-icon v-else :icon="saveIcon" />
+            <ion-icon :icon="saveIcon" />
           </button>
           <button
             class="icon-btn"
@@ -49,6 +47,13 @@
       :message="`This flow was already saved as &quot;${savedSessionName}&quot;. Overwrite it, or save this as a new flow?`"
       :buttons="saveAlertButtons"
       @didDismiss="showSaveConfirm = false" />
+
+    <IonToast
+      :is-open="savedFlash"
+      message="saved"
+      :duration="1500"
+      position="bottom"
+      @did-dismiss="savedFlash = false" />
 
     <ion-content class="ion-padding" fullscreen>
       <div class="session-layout">
@@ -270,6 +275,7 @@
     IonIcon,
     IonAlert,
     IonRange,
+    IonToast,
   } from '@ionic/vue'
   import {
     save as saveIcon,
@@ -617,9 +623,6 @@
 
   function flashSaved() {
     savedFlash.value = true
-    setTimeout(() => {
-      savedFlash.value = false
-    }, 1500)
   }
 
   function save() {
@@ -723,13 +726,6 @@
   }
   .back-to-home:hover {
     color: var(--color-text);
-  }
-  .save-btn.flashed {
-    color: var(--color-accent);
-  }
-  .saved-flash-label {
-    font-size: var(--text-xs);
-    letter-spacing: 0.08em;
   }
 
   .current-cluster-block {

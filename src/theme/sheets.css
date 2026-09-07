@@ -64,3 +64,24 @@
   background: rgba(74, 100, 120, 0.1);
   border-left: 2px solid var(--voice-1);
 }
+
+/* ion-segment (Voices / Drift toggles in the settings sheet) — sliding indicator gives
+   the native selection feel .option-list can't; ion-segment-button is shadow DOM, so
+   this needs to live here (unscoped) rather than in HomeView's scoped <style>. */
+ion-segment {
+  --background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 2px;
+}
+ion-segment-button {
+  --color: var(--color-text-dim);
+  --color-checked: var(--color-bg);
+  --indicator-color: var(--voice-1);
+  --border-radius: 8px;
+  min-height: 40px;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  text-transform: none;
+  letter-spacing: normal;
+}

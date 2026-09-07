@@ -3,38 +3,42 @@
     <p class="section-label">the flow</p>
     <div class="history-scroll">
       <IonReorderGroup :disabled="false" @ionItemReorder="onReorder($event)">
-        <div
+        <IonItemSliding
           v-for="(cluster, i) in sequence"
           :key="i"
           class="history-row"
         >
-          <div
-            class="history-entry"
-            :class="{
-              current: i === activeIndex,
-              'loop-origin': i === loopPoint,
-              playing: i === playingIndex,
-            }"
-            @click="onEntryClick(cluster, i)"
-          >
-            <IonReorder class="reorder-handle" :style="{ opacity: sequence.length < 2 ? 0 : 0.4 }" />
-            <span class="entry-index">{{ i + 1 }}</span>
-            <span
-              v-for="(midi, v) in sortCluster(cluster)"
-              :key="v"
-              class="entry-note"
-              :style="{ color: voiceColors[v] }"
-            >{{ midiToName(midi) }}</span>
-            <div class="row-actions">
-              <button class="icon-btn action-btn" @click.stop="startEdit(cluster, i)" title="edit notes">
-                <IonIcon :icon="createOutline" />
-              </button>
-              <button class="icon-btn action-btn delete-btn" @click.stop="confirmDelete(i)" title="delete">
-                <IonIcon :icon="trashOutline" />
-              </button>
+          <IonItem lines="none" class="history-item-shim">
+            <div
+              class="history-entry"
+              :class="{
+                current: i === activeIndex,
+                'loop-origin': i === loopPoint,
+                playing: i === playingIndex,
+              }"
+              @click="onEntryClick(cluster, i)"
+            >
+              <IonReorder class="reorder-handle" :style="{ opacity: sequence.length < 2 ? 0 : 0.4 }" />
+              <span class="entry-index">{{ i + 1 }}</span>
+              <span
+                v-for="(midi, v) in sortCluster(cluster)"
+                :key="v"
+                class="entry-note"
+                :style="{ color: voiceColors[v] }"
+              >{{ midiToName(midi) }}</span>
+              <div class="row-actions">
+                <button class="icon-btn action-btn" @click.stop="startEdit(cluster, i)" title="edit notes">
+                  <IonIcon :icon="createOutline" />
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
+          </IonItem>
+          <IonItemOptions side="end">
+            <IonItemOption color="danger" @click="confirmDelete(i)">
+              <IonIcon slot="icon-only" :icon="trashOutline" />
+            </IonItemOption>
+          </IonItemOptions>
+        </IonItemSliding>
       </IonReorderGroup>
     </div>
   </div>
@@ -102,6 +106,10 @@ import { ref, computed, watch } from 'vue'
 import {
   IonReorderGroup,
   IonReorder,
+  IonItemSliding,
+  IonItem,
+  IonItemOptions,
+  IonItemOption,
   IonIcon,
   IonModal,
   IonHeader,

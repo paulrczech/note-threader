@@ -99,30 +99,25 @@
 
             <div class="sheet-group">
               <p class="sheet-label">voices</p>
-              <div class="option-list">
-                <button
-                  v-for="n in [3, 4]"
-                  :key="n"
-                  class="option-btn"
-                  :class="{ active: voiceCount === n }"
-                  @click="settingsStore.setVoiceCount(n as 3 | 4)">
-                  {{ n }}
-                </button>
-              </div>
+              <IonSegment
+                :value="voiceCount"
+                @ionChange="settingsStore.setVoiceCount(Number(($event as CustomEvent).detail.value) as 3 | 4)">
+                <IonSegmentButton v-for="n in [3, 4]" :key="n" :value="n">
+                  <IonLabel>{{ n }}</IonLabel>
+                </IonSegmentButton>
+              </IonSegment>
             </div>
 
             <div class="sheet-group">
               <p class="sheet-label">drift</p>
-              <div class="option-list">
-                <button
-                  v-for="m in movementOptions"
-                  :key="m.value"
-                  class="option-btn"
-                  :class="{ active: movementSize === m.value }"
-                  @click="settingsStore.setMovementSize(m.value as any)">
-                  {{ m.label }}
-                </button>
-              </div>
+              <IonSegment
+                scrollable
+                :value="movementSize"
+                @ionChange="settingsStore.setMovementSize(($event as CustomEvent).detail.value)">
+                <IonSegmentButton v-for="m in movementOptions" :key="m.value" :value="m.value">
+                  <IonLabel>{{ m.label }}</IonLabel>
+                </IonSegmentButton>
+              </IonSegment>
             </div>
 
             <div class="sheet-group">
@@ -246,6 +241,9 @@
     IonPickerColumnOption,
     IonToast,
     IonAlert,
+    IonSegment,
+    IonSegmentButton,
+    IonLabel,
   } from '@ionic/vue'
   import { playOutline, helpCircleOutline, closeOutline, chevronForwardOutline } from 'ionicons/icons'
   import AboutModal from '../components/ui/AboutModal.vue'

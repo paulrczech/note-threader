@@ -157,3 +157,34 @@ ion-toolbar {
 .alert-button-role-destructive {
   color: #e07878 !important;
 }
+
+/* ion-item (SequenceHistory swipe-to-delete rows) — ion-item-sliding requires a real
+   ion-item as its slidable content (it queries for one internally), but the row's
+   actual look already comes entirely from the custom .history-entry div nested inside
+   it — this just strips ion-item's own default padding/min-height/background so it's
+   an invisible gesture surface, not a second layer of chrome. */
+ion-item.history-item-shim {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  --min-height: 0;
+}
+ion-item.history-item-shim::part(native) {
+  padding: 0;
+}
+ion-item-options ion-item-option {
+  font-family: var(--font-sans);
+}
+
+/* ion-toast ("saved" flash, HomeView's "default saved" toast) */
+ion-toast {
+  --background: var(--color-surface);
+  --color: var(--color-text);
+  --border-color: var(--color-border);
+  --border-width: 1px;
+  --border-style: solid;
+  --border-radius: 10px;
+  --box-shadow: none;
+  font-family: var(--font-sans);
+}
