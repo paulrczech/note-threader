@@ -179,6 +179,18 @@
           <IonButtons slot="start">
             <IonButton @click="cancelPicker">cancel</IonButton>
           </IonButtons>
+          <div class="octave-transpose">
+            <button
+              class="icon-btn transpose-btn"
+              :disabled="!canTransposeDown"
+              title="down an octave"
+              @click="transposePicker(-1)">−12</button>
+            <button
+              class="icon-btn transpose-btn"
+              :disabled="!canTransposeUp"
+              title="up an octave"
+              @click="transposePicker(1)">+12</button>
+          </div>
           <IonButtons slot="end">
             <IonButton @click="previewPicker">
               <IonIcon slot="icon-only" :icon="playOutline" />
@@ -248,7 +260,7 @@
     MAX_CLUSTER_SPREAD,
   } from '../data/notes'
   import type { Cluster } from '../utils/noteUtils'
-  import { isValidCluster, sortCluster } from '../utils/noteUtils'
+  import { isValidCluster, sortCluster, canTransposeOctave } from '../utils/noteUtils'
 
   const VOICE_COLORS = [
     'var(--voice-1)',
@@ -313,6 +325,20 @@
   watch(instrumentRange, ({ min, max }) => {
     manualMidi.value = manualMidi.value.map(midi => Math.min(Math.max(midi, min), max))
   })
+
+  const canTransposeUp = computed(() =>
+    canTransposeOctave(manualMidi.value.slice(0, voiceCount.value), 1, instrumentRange.value)
+  )
+  const canTransposeDown = computed(() =>
+    canTransposeOctave(manualMidi.value.slice(0, voiceCount.value), -1, instrumentRange.value)
+  )
+
+  function transposePicker(direction: 1 | -1) {
+    if (!canTransposeOctave(manualMidi.value.slice(0, voiceCount.value), direction, instrumentRange.value)) return
+    for (let i = 0; i < voiceCount.value; i++) {
+      manualMidi.value[i] += direction * 12
+    }
+  }
 
   const pickerSnapshot = ref<{ midi: number[]; showManual: boolean } | null>(
     null

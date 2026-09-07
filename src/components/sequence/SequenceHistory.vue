@@ -56,6 +56,18 @@
         <IonButtons slot="start">
           <IonButton @click="cancelEdit">cancel</IonButton>
         </IonButtons>
+        <div class="octave-transpose">
+          <button
+            class="icon-btn transpose-btn"
+            :disabled="!canTransposeDown"
+            title="down an octave"
+            @click="transposeEdit(-1)">−12</button>
+          <button
+            class="icon-btn transpose-btn"
+            :disabled="!canTransposeUp"
+            title="up an octave"
+            @click="transposeEdit(1)">+12</button>
+        </div>
         <IonButtons slot="end">
           <IonButton @click="emitPreview">
             <IonIcon slot="icon-only" :icon="playOutline" />
@@ -103,7 +115,7 @@ import {
 } from '@ionic/vue'
 import { trashOutline, createOutline, playOutline } from 'ionicons/icons'
 import type { Cluster } from '../../utils/noteUtils'
-import { sortCluster, isValidCluster } from '../../utils/noteUtils'
+import { sortCluster, isValidCluster, canTransposeOctave } from '../../utils/noteUtils'
 import { midiToName, MAX_CLUSTER_SPREAD } from '../../data/notes'
 import { INSTRUMENT_NOTE_RANGE } from '../../composables/useAudioEngine'
 import { useSettingsStore } from '../../stores/settingsStore'
@@ -149,6 +161,15 @@ function startEdit(cluster: Cluster, index: number) {
 
 function onColumnChange(voiceIndex: number, event: CustomEvent) {
   editValues.value[voiceIndex] = event.detail.value
+  editError.value = ''
+}
+
+const canTransposeUp = computed(() => canTransposeOctave(editValues.value, 1, instrumentRange.value))
+const canTransposeDown = computed(() => canTransposeOctave(editValues.value, -1, instrumentRange.value))
+
+function transposeEdit(direction: 1 | -1) {
+  if (!canTransposeOctave(editValues.value, direction, instrumentRange.value)) return
+  editValues.value = editValues.value.map(n => n + direction * 12)
   editError.value = ''
 }
 

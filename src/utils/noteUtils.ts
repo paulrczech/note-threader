@@ -26,6 +26,20 @@ export function isValidCluster(
   return true
 }
 
+// Whether shifting every note by one octave (up or down) would keep all of them within
+// `bounds` — used to gate octave-transpose controls in the note pickers (disable the
+// button rather than silently clamping a voice that would fall outside).
+export function canTransposeOctave(
+  notes: number[],
+  direction: 1 | -1,
+  bounds: { min: number; max: number }
+): boolean {
+  return notes.every(n => {
+    const shifted = n + direction * 12
+    return shifted >= bounds.min && shifted <= bounds.max
+  })
+}
+
 // Check if two clusters are equal (same notes regardless of order)
 export function clustersEqual(a: Cluster, b: Cluster): boolean {
   if (a.length !== b.length) return false
