@@ -27,6 +27,7 @@ function intervalBounds(movementType: string): { min: number; max: number } {
     case 'group-step':        return { min: 1, max: 2 }
     case 'group-shift':       return { min: 1, max: 3 }  // half step, whole step, minor third
     case 'parallel-quality':  return { min: 1, max: 2 }
+    case 'resolve-iv':        return { min: 1, max: 2 }
     case 'third':             return { min: 1, max: 4 }
     case 'tritone':           return { min: 6, max: 6 }
     case 'chromatic-approach':return { min: 1, max: 1 }
@@ -289,8 +290,11 @@ export function generateCandidates(
 
   switch (strategy.voicesAllowedToMove) {
     case 'all':
-      if (strategy.movementType === 'half' || strategy.movementType === 'whole' || strategy.movementType === 'group-shift') {
-        // uniform interval, same for every voice — shape preserved, just transposed
+      if (strategy.movementType === 'half' || strategy.movementType === 'whole' || strategy.movementType === 'group-shift' || strategy.movementType === 'tritone') {
+        // uniform interval, same for every voice — shape preserved, just transposed.
+        // For 'tritone': under key lock this naturally restricts to voices sitting on
+        // scale degrees 4 or 7, the two notes that actually share a tritone within a
+        // diatonic scale — the harmonic basis of a real tritone substitution.
         candidates = generateAllVoiceSameDirection(cluster, strategy, allowedNotes, bounds)
       } else if (strategy.movementType === 'group-step') {
         // every voice moves independently by step, filtered to the current scale (the
@@ -304,6 +308,13 @@ export function generateCandidates(
           ? new Set(getScaleNotes(options.keyRoot, parallelScaleId(options.scaleId ?? 'major'), bounds.min, bounds.max))
           : undefined
         candidates = generateAllVoicesIndependentCandidates(cluster, strategy, parallelNotes, bounds)
+      } else if (strategy.movementType === 'resolve-iv') {
+        // every voice moves independently by step, filtered to the scale rooted a
+        // fourth above the current key (the IV/subdominant) rather than the tonic
+        const ivNotes = options.keyRoot !== undefined
+          ? new Set(getScaleNotes(options.keyRoot + 5, options.scaleId ?? 'major', bounds.min, bounds.max))
+          : undefined
+        candidates = generateAllVoicesIndependentCandidates(cluster, strategy, ivNotes, bounds)
       } else if (strategy.movementType === 'power') {
         candidates = generatePowerChordCandidates(cluster, bounds)
       } else {

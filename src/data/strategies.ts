@@ -33,6 +33,8 @@
 //                    scale (voicesAllowedToMove: 'all' only)
 //   'parallel-quality' — every voice moves independently by step, filtered to the
 //                    parallel major/minor of the current key (voicesAllowedToMove: 'all' only)
+//   'resolve-iv'   — every voice moves independently by step, filtered to the scale
+//                    rooted a fourth above the current key (voicesAllowedToMove: 'all' only)
 
 export interface Strategy {
   id: string
@@ -169,7 +171,7 @@ export const STRATEGIES: Strategy[] = [
     movementType: 'tritone',
     direction: 'any',
     requiresKeyLock: true,
-    notes: 'Tritone substitution. Requires Key Lock.',
+    notes: 'All voices shift by the same tritone, either all up or all down (shape preserved). Requires Key Lock.',
   },
   {
     id: 'slash-chord',
@@ -196,10 +198,10 @@ export const STRATEGIES: Strategy[] = [
     text: 'Resolve somewhere wrong',
     hint: 'Voices move by step toward the IV chord instead of the expected I — a deceptive cadence. Requires Key Lock.',
     voicesAllowedToMove: 'all',
-    movementType: 'step',
+    movementType: 'resolve-iv',
     direction: 'any',
     requiresKeyLock: true,
-    notes: 'Cadence to IV instead of I. Requires Key Lock.',
+    notes: 'Each voice independently steps toward the nearest note in the scale rooted a fourth above the current key (the IV/subdominant) instead of the tonic. Requires Key Lock.',
   },
   {
     id: 'relative-shift',
