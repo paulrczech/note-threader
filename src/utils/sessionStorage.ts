@@ -1,4 +1,5 @@
 import type { Cluster } from './noteUtils'
+import { clusterLabel } from './noteUtils'
 import type { InstrumentType } from '../stores/settingsStore'
 
 export interface SavedSession {
@@ -29,11 +30,21 @@ export function listSessions(): SavedSession[] {
   return loadAll().sort((a, b) => b.savedAt - a.savedAt)
 }
 
+// Default save name derived from the session's starting notes — "eddy-A.D.G.C",
+// numbered from 1 whenever the same starting cluster has been saved before.
+function nextSessionName(sequence: Cluster[], sessions: SavedSession[]): string {
+  const base = `eddy-${clusterLabel(sequence[0])}`
+  const existingNames = new Set(sessions.map(s => s.name))
+  let n = 1
+  while (existingNames.has(`${base}-${n}`)) n++
+  return `${base}-${n}`
+}
+
 export function saveSession(sequence: Cluster[], voiceCount: number, instrument?: InstrumentType, name?: string): SavedSession {
   const sessions = loadAll()
   const session: SavedSession = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    name: name ?? `session ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+    name: name ?? nextSessionName(sequence, sessions),
     savedAt: Date.now(),
     sequence,
     voiceCount,

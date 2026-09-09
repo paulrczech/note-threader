@@ -1,4 +1,4 @@
-import { MIDI_MIN, MIDI_MAX, MAX_CLUSTER_SPREAD, dissonanceRank } from '../data/notes'
+import { MIDI_MIN, MIDI_MAX, MAX_CLUSTER_SPREAD, dissonanceRank, midiToNoteName } from '../data/notes'
 
 export type Cluster = number[]  // array of MIDI notes, sorted ascending (V1 at index 0)
 
@@ -93,6 +93,13 @@ export function reachableNotes(
     results.push(target)
   }
   return results
+}
+
+// Pitch classes of a cluster's notes (no octave), low to high — e.g. [45, 50, 55] ->
+// "A.D.G". Used as the base label for default save names and export filenames, keyed off
+// a session's starting cluster so the label identifies the session at a glance.
+export function clusterLabel(cluster: Cluster): string {
+  return sortCluster(cluster).map(midiToNoteName).join('.')
 }
 
 // Deduplicate an array of clusters

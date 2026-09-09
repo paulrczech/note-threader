@@ -1,5 +1,6 @@
 import { Midi } from '@tonejs/midi'
 import type { Cluster } from './noteUtils'
+import { clusterLabel } from './noteUtils'
 
 export type ArpeggioDirection = 'up' | 'down' | 'updown' | 'random' | 'chord'
 
@@ -103,7 +104,7 @@ export function exportSequenceAsMidi(
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `eddy-${Date.now().toString(36)}.mid`
+  a.download = `eddy-${clusterLabel(sequence[0])}.mid`
   a.click()
   URL.revokeObjectURL(url)
 }
