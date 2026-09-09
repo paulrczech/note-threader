@@ -129,19 +129,6 @@
           </p>
         </div>
 
-        <!-- Confirm button -->
-        <div
-          v-if="selectedIndices.length > 0 && !sequenceStore.loopResolved"
-          class="confirm-block">
-          <button class="btn-primary" @click="confirmSelection">
-            {{
-              selectedIndices.length === 1
-                ? 'add to the flow'
-                : 'add these ' + selectedIndices.length + ' to the flow'
-            }}
-          </button>
-        </div>
-
         <!-- Sequence history — fills remaining space -->
         <div v-if="sequenceStore.sequence.length > 0" class="flow-section">
           <SequenceHistory
@@ -155,6 +142,22 @@
             @reorder="reorderClusters" />
         </div>
 
+      </div>
+
+      <!-- Confirm button — slot="fixed" pins it above the footer regardless of scroll
+           position; a plain sticky div doesn't work here because ion-content scrolls
+           via an internal shadow-DOM element that CSS position:sticky can't reach. -->
+      <div
+        v-if="selectedIndices.length > 0 && !sequenceStore.loopResolved"
+        slot="fixed"
+        class="confirm-block">
+        <button class="btn-primary" @click="confirmSelection">
+          {{
+            selectedIndices.length === 1
+              ? 'add to the flow'
+              : 'add these ' + selectedIndices.length + ' to the flow'
+          }}
+        </button>
       </div>
     </ion-content>
 
@@ -700,6 +703,25 @@
     max-width: 500px;
     margin: 0 auto;
     padding-bottom: 2rem;
+  }
+
+  /* slot="fixed" content is positioned by us, absolute within ion-content, immune to
+     its internal scroll — pins the button reachable the moment something's selected,
+     with a full streams grid and a tall flow list below it would otherwise be well out
+     of reach. Reproduces ion-content's own padding/max-width since fixed-slot content
+     bypasses the padded scroll area those would normally come from. */
+  .confirm-block {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 0.8rem 1rem;
+    background: linear-gradient(to top, var(--color-bg) 65%, transparent);
+  }
+  .confirm-block .btn-primary {
+    max-width: 500px;
+    margin: 0 auto;
   }
 
   .session-title {
