@@ -111,6 +111,7 @@
             <div class="sheet-group">
               <p class="sheet-label">drift</p>
               <IonSegment
+                class="drift-segment"
                 scrollable
                 :value="movementSize"
                 @ionChange="settingsStore.setMovementSize(($event as CustomEvent).detail.value)">

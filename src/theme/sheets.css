@@ -77,7 +77,7 @@ ion-segment {
 ion-segment-button {
   --color: #9aa4b0; /* lighter than --color-text-dim — that token reads too faint against
     --color-surface for an unselected segment option (vs. its usual use as small labels/meta) */
-  --color-checked: var(--voice-1);
+  --color-checked: var(--color-text);
   --indicator-color: var(--voice-1);
   --border-radius: 8px;
   min-height: 40px;
@@ -85,4 +85,13 @@ ion-segment-button {
   font-size: var(--text-base);
   text-transform: none;
   letter-spacing: normal;
+}
+
+/* Drift's 5 options are one label longer than the row comfortably fits (overflows by
+   about half a button on a real phone) — tighten padding and drop the font a step just
+   for this row rather than shrinking Voices' already-fine 2-option layout too */
+.drift-segment ion-segment-button {
+  --padding-start: 0.5rem;
+  --padding-end: 0.5rem;
+  font-size: var(--text-sm);
 }
