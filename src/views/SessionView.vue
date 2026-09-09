@@ -504,9 +504,11 @@
   function confirmSelection() {
     if (selectedIndices.value.length === 0) return
 
-    for (const idx of selectedIndices.value) {
-      const chosen = candidates.value[idx]
-      sequenceStore.confirm(chosen)
+    for (let i = 0; i < selectedIndices.value.length; i++) {
+      const chosen = candidates.value[selectedIndices.value[i]]
+      // Only the first confirm in a multi-select batch takes an undo snapshot — the
+      // whole batch is one user action ("add these N"), so it should be one undo step.
+      sequenceStore.confirm(chosen, { skipHistory: i > 0 })
 
       const loopIdx = findLoopPoint(sequenceStore.sequence)
       if (loopIdx !== -1) {
@@ -528,16 +530,15 @@
 
   function goUndo() {
     audioEngine.stopLoop(true)
-    sequenceStore.undo()
-    sequenceStore.setLoopResolved(false)
-    advance()
+    // Only redraw a strategy / regenerate streams if the current (last) cluster
+    // actually changed — undoing an edit to an earlier row shouldn't disturb streams
+    // generated against a last cluster that never moved.
+    if (sequenceStore.undo()) advance()
   }
 
   function goRedo() {
     audioEngine.stopLoop(true)
-    sequenceStore.redo()
-    sequenceStore.setLoopResolved(false)
-    advance()
+    if (sequenceStore.redo()) advance()
   }
 
   const showResetConfirm = ref(false)

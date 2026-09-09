@@ -1,11 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { Cluster, sortCluster, isValidCluster } from '../utils/noteUtils'
+import { Cluster, sortCluster, isValidCluster, clustersEqual } from '../utils/noteUtils'
 import { MIDI_SEED_MIN, MIDI_SEED_MAX, MIDI_MIN, MIDI_MAX } from '../data/notes'
 
 export const useSequenceStore = defineStore('sequence', () => {
   const sequence = ref<Cluster[]>([])
-  const redoStack = ref<Cluster[]>([])
+  // Full-array snapshots of `sequence`, taken before each mutation (confirm, edit,
+  // delete, reorder, transpose) — undo/redo swap the whole array in and out, so every
+  // mutation type is covered without needing a separate inverse for each one.
+  const undoStack = ref<Cluster[][]>([])
+  const redoStack = ref<Cluster[][]>([])
   const candidates = ref<Cluster[]>([])
   const loopResolved = ref(false)
   const loopPoint = ref<number>(-1)
@@ -16,12 +20,24 @@ export const useSequenceStore = defineStore('sequence', () => {
   )
 
   const moveCount = computed(() => Math.max(0, sequence.value.length - 1))
-  const canUndo = computed(() => sequence.value.length > 1)
+  const canUndo = computed(() => undoStack.value.length > 0)
   const canRedo = computed(() => redoStack.value.length > 0)
+
+  function snapshot(): Cluster[] {
+    return sequence.value.map(c => [...c])
+  }
+
+  // Call before any mutation that should be a distinct undo step. A new mutation always
+  // invalidates the redo branch — standard undo/redo semantics.
+  function pushHistory() {
+    undoStack.value.push(snapshot())
+    redoStack.value = []
+  }
 
   function start(openingCluster: Cluster, bounds?: { min: number; max: number }) {
     // Always clear old session first — never let stale data leak through
     sequence.value = []
+    undoStack.value = []
     redoStack.value = []
     candidates.value = []
     loopResolved.value = false
@@ -77,25 +93,42 @@ export const useSequenceStore = defineStore('sequence', () => {
     candidates.value = newCandidates
   }
 
-  function confirm(cluster: Cluster) {
-    redoStack.value = []  // new branch clears redo history
+  // `skipHistory` lets a caller batch several confirms (e.g. multi-select) into one
+  // undo step — only the first call in the batch should snapshot.
+  function confirm(cluster: Cluster, options: { skipHistory?: boolean } = {}) {
+    if (!options.skipHistory) pushHistory()
     sequence.value.push(sortCluster(cluster))
     candidates.value = []
   }
 
-  function undo() {
-    if (sequence.value.length <= 1) return
-    const popped = sequence.value.pop()!
-    redoStack.value.push(popped)
-    candidates.value = []
-    loopResolved.value = false
+  // Only clear candidates/loop state when the *current* (last) cluster's value actually
+  // changes — e.g. undoing an edit to an earlier row shouldn't disturb streams generated
+  // against a last cluster that never moved. Returns whether it changed, so the caller
+  // knows whether to redraw a strategy and regenerate candidates.
+  function undo(): boolean {
+    if (undoStack.value.length === 0) return false
+    const prevLast = currentCluster.value
+    redoStack.value.push(snapshot())
+    sequence.value = undoStack.value.pop()!
+    const changed = !prevLast || !currentCluster.value || !clustersEqual(prevLast, currentCluster.value)
+    if (changed) {
+      candidates.value = []
+      loopResolved.value = false
+    }
+    return changed
   }
 
-  function redo() {
-    if (redoStack.value.length === 0) return
-    const cluster = redoStack.value.pop()!
-    sequence.value.push(cluster)
-    candidates.value = []
+  function redo(): boolean {
+    if (redoStack.value.length === 0) return false
+    const prevLast = currentCluster.value
+    undoStack.value.push(snapshot())
+    sequence.value = redoStack.value.pop()!
+    const changed = !prevLast || !currentCluster.value || !clustersEqual(prevLast, currentCluster.value)
+    if (changed) {
+      candidates.value = []
+      loopResolved.value = false
+    }
+    return changed
   }
 
   // Returns whether an octave shift is possible in the given direction
@@ -109,6 +142,7 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   function transposeOctave(direction: 1 | -1) {
     if (!canTransposeOctave(direction)) return
+    pushHistory()
     const shifted = currentCluster.value!.map(n => n + direction * 12) as Cluster
     const lastIdx = sequence.value.length - 1
     sequence.value[lastIdx] = shifted
@@ -119,11 +153,14 @@ export const useSequenceStore = defineStore('sequence', () => {
     if (index < 0 || index >= sequence.value.length) return
     const sorted = sortCluster(newCluster)
     if (!isValidCluster(sorted, bounds)) return
+    if (clustersEqual(sorted, sequence.value[index])) return  // no-op edit, don't spend an undo step
+    pushHistory()
     sequence.value[index] = sorted
   }
 
   function reorderSequence(from: number, to: number) {
     if (from === to) return
+    pushHistory()
     const arr = [...sequence.value]
     const [moved] = arr.splice(from, 1)
     arr.splice(to, 0, moved)
@@ -134,6 +171,7 @@ export const useSequenceStore = defineStore('sequence', () => {
   function deleteAt(index: number) {
     if (index < 0 || index >= sequence.value.length) return
     if (index === 0 && sequence.value.length === 1) return
+    pushHistory()
     sequence.value.splice(index, 1)
     candidates.value = []
   }
@@ -149,6 +187,7 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   function reset() {
     sequence.value = []
+    undoStack.value = []
     redoStack.value = []
     candidates.value = []
     loopResolved.value = false
