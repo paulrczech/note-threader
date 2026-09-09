@@ -258,11 +258,31 @@ function cartesianProduct(arrays: number[][]): number[][] {
   )
 }
 
-// Select a random subset of candidates when there are too many
-function sampleCandidates(candidates: Cluster[], max: number): Cluster[] {
+function shuffle<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5)
+}
+
+// Select a random subset of candidates when there are too many, biased so options that
+// move an outer voice (top or bottom) aren't crowded out by chance. A strategy can
+// generate far more inner-voice-only candidates than outer-voice ones, and outer-voice
+// movement is what actually changes the cluster's register/spread — the more audible,
+// interesting change. Reserve up to half the slots for the outer-voice pool (when it has
+// enough to fill them) before filling the rest randomly from whatever's left.
+function sampleCandidates(candidates: Cluster[], max: number, baseline: Cluster): Cluster[] {
   if (candidates.length <= max) return candidates
-  const shuffled = [...candidates].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, max)
+
+  const topIdx = baseline.length - 1
+  const touchesOuterVoice = (c: Cluster) => c[0] !== baseline[0] || c[topIdx] !== baseline[topIdx]
+
+  const outerPool = shuffle(candidates.filter(touchesOuterVoice))
+  const innerPool = shuffle(candidates.filter(c => !touchesOuterVoice(c)))
+
+  const outerQuota = Math.min(Math.ceil(max / 2), outerPool.length)
+  const picked = outerPool.slice(0, outerQuota)
+  const rest = shuffle([...outerPool.slice(outerQuota), ...innerPool])
+  picked.push(...rest.slice(0, max - picked.length))
+
+  return shuffle(picked)
 }
 
 // Main export: given current cluster + strategy + options, return candidate clusters
@@ -342,6 +362,7 @@ export function generateCandidates(
 
   // Remove duplicates, remove the current cluster itself, cap results
   const unique = deduplicateClusters(candidates)
-  const filtered = unique.filter(c => !c.every((n, i) => n === sortCluster(cluster)[i]))
-  return sampleCandidates(filtered, MAX_CANDIDATES)
+  const sortedCluster = sortCluster(cluster)
+  const filtered = unique.filter(c => !c.every((n, i) => n === sortedCluster[i]))
+  return sampleCandidates(filtered, MAX_CANDIDATES, sortedCluster)
 }

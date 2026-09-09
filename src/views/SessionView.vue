@@ -65,8 +65,7 @@
         <!-- Strategy card -->
         <StrategyCard
           v-if="activeStrategy && !sequenceStore.loopResolved"
-          :strategy="activeStrategy"
-          @redraw="redraw" />
+          :strategy="activeStrategy" />
 
         <!-- Current cluster — the last confirmed move, always tappable to hear -->
         <button
@@ -83,12 +82,17 @@
           class="candidates-block">
           <div class="candidates-header">
             <p class="section-label">streams — tap to hear</p>
-            <button
-              class="btn-outline multi-toggle"
-              :class="{ active: multiSelect }"
-              @click="toggleMultiSelect">
-              multi
-            </button>
+            <div class="streams-actions">
+              <button class="icon-btn refresh-streams-btn" aria-label="another" @click="redraw">
+                <IonIcon :icon="refreshOutline" />
+              </button>
+              <button
+                class="btn-outline multi-toggle"
+                :class="{ active: multiSelect }"
+                @click="toggleMultiSelect">
+                multi
+              </button>
+            </div>
           </div>
           <div class="candidates-grid" :class="{ 'multi-active': multiSelect }">
             <button
@@ -295,6 +299,7 @@
     addOutline,
     removeOutline,
     downloadOutline,
+    refreshOutline,
   } from 'ionicons/icons'
 
   import ClusterDisplay from '../components/cluster/ClusterDisplay.vue'
@@ -1013,6 +1018,20 @@
 
   .candidates-header .section-label {
     margin-bottom: 0;
+  }
+
+  .streams-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  /* .icon-btn (box model, touch target) comes from theme/buttons.css */
+  .refresh-streams-btn {
+    font-size: var(--icon-sm);
+  }
+  .refresh-streams-btn:hover {
+    color: var(--color-accent);
   }
 
   /* .btn-outline (box model, touch target) comes from theme/buttons.css */

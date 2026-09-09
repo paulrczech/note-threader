@@ -1,7 +1,6 @@
 # Eddy — TODO
 
 ## UI / Feel
-- **Collapsible strategy card ("The Drift")** — toggle to collapsed state: strategy text smaller/truncated, refresh icon always visible. Replace "another" button label with refresh icon in both states. Easy lift.
 - **Opt-in "show labels" toggle** — a light instructional-overlay mode, off by default: small captions near the handful of controls that aren't self-explanatory at a glance (subdivision note-glyphs, arpeggio-direction icons, multi-select toggle). Not a forced first-launch tutorial, not annotating everything — just a togglable help layer for the few genuinely non-obvious icons. Worth its own planning pass before implementing.
 
 ## Sound
