@@ -77,6 +77,10 @@ export function deleteSession(id: string): void {
   saveAll(sessions)
 }
 
+export function clearAllSessions(): void {
+  saveAll([])
+}
+
 export function renameSession(id: string, name: string): void {
   const sessions = loadAll()
   const target = sessions.find(s => s.id === id)

@@ -1,8 +1,21 @@
 <template>
   <div class="saved-sessions">
     <p class="sheet-title">past flows</p>
+
+    <ion-alert
+      :is-open="showClearConfirm"
+      header="clear all saved flows?"
+      message="This can't be undone."
+      :buttons="clearAlertButtons"
+      @didDismiss="showClearConfirm = false" />
+
     <div class="sheet-group">
-      <p class="sheet-label">saved sessions</p>
+      <div class="sheet-label-row">
+        <p class="sheet-label">saved sessions</p>
+        <button v-if="sessions.length > 0" class="clear-all-btn" @click="showClearConfirm = true">
+          clear all
+        </button>
+      </div>
       <div v-if="sessions.length === 0" class="empty-msg">
         no saved flows yet
       </div>
@@ -45,11 +58,12 @@
 
 <script setup lang="ts">
   import { ref, onMounted, nextTick } from 'vue'
-  import { IonIcon } from '@ionic/vue'
+  import { IonIcon, IonAlert } from '@ionic/vue'
   import { chevronForwardOutline, trashOutline } from 'ionicons/icons'
   import {
     listSessions,
     deleteSession,
+    clearAllSessions,
     renameSession,
     type SavedSession,
   } from '../../utils/sessionStorage'
@@ -60,6 +74,7 @@
   const editingId = ref<string | null>(null)
   const editName = ref('')
   const editInputs: Record<string, HTMLInputElement> = {}
+  const showClearConfirm = ref(false)
 
   onMounted(() => {
     sessions.value = listSessions()
@@ -69,6 +84,16 @@
     deleteSession(id)
     sessions.value = listSessions()
   }
+
+  function clearAll() {
+    clearAllSessions()
+    sessions.value = listSessions()
+  }
+
+  const clearAlertButtons = [
+    { text: 'cancel', role: 'cancel' },
+    { text: 'clear all', role: 'destructive', handler: clearAll },
+  ]
 
   function startRename(s: SavedSession) {
     editingId.value = s.id
@@ -106,6 +131,32 @@
     color: var(--color-text-dim);
     font-style: italic;
     padding: 1rem 0;
+  }
+
+  /* .sheet-label (typography) comes from sheets.css — this row just adds "clear all"
+     as a right-aligned sibling without disturbing that shared rule */
+  .sheet-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sheet-label-row .sheet-label {
+    margin: 0;
+  }
+
+  .clear-all-btn {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: var(--text-label);
+    letter-spacing: 0.1em;
+    color: var(--color-text-dim);
+    cursor: pointer;
+    padding: 0.2rem 0;
+    margin-bottom: 0.25rem;
+  }
+  .clear-all-btn:hover {
+    color: #e07878;
   }
 
   /* .option-list (box model) comes from sheets.css — session-row is a plain wrapper
