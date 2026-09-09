@@ -75,8 +75,9 @@ ion-segment {
   padding: 2px;
 }
 ion-segment-button {
-  --color: var(--color-text-dim);
-  --color-checked: var(--color-bg);
+  --color: #9aa4b0; /* lighter than --color-text-dim — that token reads too faint against
+    --color-surface for an unselected segment option (vs. its usual use as small labels/meta) */
+  --color-checked: var(--voice-1);
   --indicator-color: var(--voice-1);
   --border-radius: 8px;
   min-height: 40px;
